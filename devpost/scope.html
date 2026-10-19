@@ -1,0 +1,461 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MicroLearning Studio — Scope Plan</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --surface: #111827;
+      --surface-border: #1f293d;
+      --surface-hover: #1e293b;
+      --accent: #38bdf8;
+      --accent-muted: rgba(56, 189, 248, 0.15);
+      --accent-glow: rgba(56, 189, 248, 0.3);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-sub: #64748b;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger: #f87171;
+      --font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: var(--font);
+      line-height: 1.6;
+      padding: 2.5rem 1.5rem;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+    }
+
+    header {
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--surface-border);
+      padding-bottom: 1.5rem;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      background: var(--accent-muted);
+      color: var(--accent);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      margin-bottom: 0.75rem;
+    }
+
+    h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(to right, #ffffff, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .tagline {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      max-width: 700px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .kernel-box {
+      border-left: 4px solid var(--accent);
+      background: linear-gradient(90deg, var(--accent-muted) 0%, rgba(17, 24, 39, 0) 100%);
+      padding: 1.25rem;
+      border-radius: 0 8px 8px 0;
+      margin-top: 0.5rem;
+      font-size: 1.05rem;
+      font-weight: 500;
+    }
+
+    /* Diagram */
+    .diagram-container {
+      background: #0d1322;
+      border: 1px solid var(--surface-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+    }
+
+    svg {
+      display: block;
+      margin: 0 auto;
+      max-width: 100%;
+      height: auto;
+    }
+
+    /* Tabs for POC boundary */
+    .tabs-nav {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--surface-border);
+      padding-bottom: 0.5rem;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+      background: var(--surface-hover);
+    }
+
+    .tab-btn.active {
+      color: var(--accent);
+      background: var(--accent-muted);
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .item-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .item-list li {
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.95rem;
+    }
+
+    .pill-now {
+      border-left: 3px solid var(--success) !important;
+    }
+
+    .pill-later {
+      border-left: 3px solid var(--warning) !important;
+    }
+
+    .pill-cut {
+      border-left: 3px solid var(--danger) !important;
+    }
+
+    .step-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      position: relative;
+      padding-left: 1.5rem;
+      border-left: 2px dashed var(--surface-border);
+      margin-left: 0.5rem;
+    }
+
+    .step-item {
+      position: relative;
+    }
+
+    .step-item::before {
+      content: '';
+      position: absolute;
+      left: calc(-1.5rem - 6px);
+      top: 6px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg);
+    }
+
+    .step-title {
+      font-weight: 700;
+      color: var(--text-main);
+      font-size: 0.95rem;
+    }
+
+    .step-desc {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--surface-border);
+      color: var(--text-sub);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <div class="badge">Devpost Learn • Build With AI: Basics</div>
+      <h1>MicroLearning Studio</h1>
+      <p class="tagline">A creator-first web application turning long-form educational expertise into polished,
+        source-grounded, interactive micro-learning lessons.</p>
+    </header>
+
+    <!-- The Kernel -->
+    <section class="card">
+      <div class="card-title">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+        The Unique Kernel
+      </div>
+      <div class="kernel-box">
+        Instead of generic AI summarizers or disconnected flashcard decks, the system adaptively extracts the source's
+        natural structure to produce a coherent, unified narrative card deck with source-grounded comprehension checks
+        and instant explanations.
+      </div>
+      <p style="margin-top: 1rem; color: var(--text-muted); font-size: 0.95rem;">
+        Creators retain full editorial authority before publishing, while busy readers get an anti-doomscroll,
+        high-retention learning experience in minutes with zero friction.
+      </p>
+    </section>
+
+    <!-- The Core Diagram -->
+    <section class="card">
+      <div class="card-title">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+        The Complete Value Loop & Architecture
+      </div>
+      <div class="diagram-container">
+        <svg viewBox="0 0 780 200" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="gradAcc" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#38bdf8" />
+              <stop offset="100%" stop-color="#0284c7" />
+            </linearGradient>
+            <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6"
+              orient="auto-start-reverse">
+              <path d="M 0 1 L 8 5 L 0 9 z" fill="#38bdf8" />
+            </marker>
+          </defs>
+
+          <!-- Box 1: Creator & Source -->
+          <rect x="10" y="55" width="160" height="90" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+          <text x="90" y="90" fill="#f8fafc" font-size="13" font-weight="700" text-anchor="middle">1. Long-Form
+            Source</text>
+          <text x="90" y="112" fill="#94a3b8" font-size="10.5" text-anchor="middle">Books, Articles, Notes</text>
+          <text x="90" y="128" fill="#38bdf8" font-size="9.5" text-anchor="middle">Author/Creator</text>
+
+          <line x1="170" y1="100" x2="200" y2="100" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)" />
+
+          <!-- Box 2: Adaptive AI Engine -->
+          <rect x="205" y="55" width="165" height="90" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+          <text x="287" y="90" fill="#f8fafc" font-size="13" font-weight="700" text-anchor="middle">2. Adaptive
+            Extraction</text>
+          <text x="287" y="112" fill="#94a3b8" font-size="10.5" text-anchor="middle">Natural Density Cards</text>
+          <text x="287" y="128" fill="#38bdf8" font-size="9.5" text-anchor="middle">Grounded Checkpoints</text>
+
+          <line x1="370" y1="100" x2="400" y2="100" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)" />
+
+          <!-- Box 3: Creator Studio -->
+          <rect x="405" y="55" width="165" height="90" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+          <text x="487" y="90" fill="#f8fafc" font-size="13" font-weight="700" text-anchor="middle">3. Creator
+            Studio</text>
+          <text x="487" y="112" fill="#94a3b8" font-size="10.5" text-anchor="middle">Review, Edit, Reorder</text>
+          <text x="487" y="128" fill="#34d399" font-size="9.5" text-anchor="middle">Editorial Authority</text>
+
+          <line x1="570" y1="100" x2="600" y2="100" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)" />
+
+          <!-- Box 4: Reader Experience -->
+          <rect x="605" y="55" width="165" height="90" rx="8" fill="#1e293b" stroke="#34d399" stroke-width="1.5" />
+          <text x="687" y="90" fill="#f8fafc" font-size="13" font-weight="700" text-anchor="middle">4. Reader
+            Player</text>
+          <text x="687" y="112" fill="#94a3b8" font-size="10.5" text-anchor="middle">Card narrative + check</text>
+          <text x="687" y="128" fill="#34d399" font-size="9.5" text-anchor="middle">Retention + Source Link</text>
+        </svg>
+      </div>
+    </section>
+
+    <!-- Target Audience & Core Loop -->
+    <div
+      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+      <div class="card" style="margin-bottom: 0;">
+        <div class="card-title">Who It's For</div>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">
+          <strong>Knowledge Creators:</strong> Authors, educators, newsletter writers, and technical specialists with
+          published books, articles, or chapters who want to give readers high-retention interactive access without
+          spending days rebuilding social carousels or quiz decks manually.
+        </p>
+      </div>
+      <div class="card" style="margin-bottom: 0;">
+        <div class="card-title">Inspiration & Ethos</div>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">
+          Rooted in direct personal author experience. Focused on native web standards, clean CSS styling,
+          distraction-free reading, anti-doomscroll pacing, and zero unnecessary UI library bloat.
+        </p>
+      </div>
+    </div>
+
+    <!-- What Done Looks Like (60s Demo) -->
+    <section class="card">
+      <div class="card-title">What "Done" Looks Like (60-Second Demo)</div>
+      <div class="step-timeline">
+        <div class="step-item">
+          <div class="step-title">1. Input / Source Selection</div>
+          <div class="step-desc">Creator pastes article text or clicks "Load Sample Article".</div>
+        </div>
+        <div class="step-item">
+          <div class="step-title">2. Adaptive Generation</div>
+          <div class="step-desc">AI plans a coherent lesson, extracting narrative cards and source-grounded checks
+            adaptively sized to source density.</div>
+        </div>
+        <div class="step-item">
+          <div class="step-title">3. Studio Review & Polish</div>
+          <div class="step-desc">Creator reviews cards, edits text, tweaks questions/explanations, and clicks "Preview /
+            Publish".</div>
+        </div>
+        <div class="step-item">
+          <div class="step-title">4. Friction-Free Reader Journey</div>
+          <div class="step-desc">Standalone reader view loads immediately. Reader steps through the card sequence,
+            answers an interactive check, sees immediate feedback and explanation, and reaches completion with a source
+            link.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive POC Boundary Tabs -->
+    <section class="card">
+      <div class="card-title">The POC Boundary</div>
+      <div class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab('now')">Now (Proof of Concept)</button>
+        <button class="tab-btn" onclick="switchTab('later')">Later (Roadmap)</button>
+        <button class="tab-btn" onclick="switchTab('cut')">Explicitly Cut</button>
+      </div>
+
+      <div id="tab-now" class="tab-content active">
+        <ul class="item-list">
+          <li class="pill-now"><strong>Source Input:</strong> Article paste box + quick "Load Sample Article" button.
+          </li>
+          <li class="pill-now"><strong>Adaptive Generation:</strong> Dynamically sizes card count (e.g. 4–10 cards) and
+            places checks based on source concepts rather than rigid templates.</li>
+          <li class="pill-now"><strong>Source-Grounded Checks:</strong> Interactive questions with verified answers and
+            educational explanations.</li>
+          <li class="pill-now"><strong>Creator Studio:</strong> Visual card deck editor (edit text, reorder, adjust
+            questions).</li>
+          <li class="pill-now"><strong>Reader Experience:</strong> Distraction-free card deck player with visible
+            Next/Prev/Progress controls, feedback modal, and completion screen.</li>
+          <li class="pill-now"><strong>Architecture:</strong> Lean, type-safe implementation with native CSS and zero UI
+            framework bloat.</li>
+        </ul>
+      </div>
+
+      <div id="tab-later" class="tab-content">
+        <ul class="item-list">
+          <li class="pill-later"><strong>Creator Authentication:</strong> Multi-tenant login, profiles, and workspace
+            security.</li>
+          <li class="pill-later"><strong>Cloud Persistence:</strong> Database storage and hosted public custom URLs.
+          </li>
+          <li class="pill-later"><strong>Learning Analytics:</strong> Drop-off graphs, card read times, and
+            comprehension accuracy rates.</li>
+          <li class="pill-later"><strong>Social Carousel Export:</strong> Direct export of cards to LinkedIn/Twitter
+            image carousels (PNG/PDF).</li>
+        </ul>
+      </div>
+
+      <div id="tab-cut" class="tab-content">
+        <ul class="item-list">
+          <li class="pill-cut"><strong>Generic Summarizers:</strong> Discarded because bulleted summaries fail to build
+            a learning narrative.</li>
+          <li class="pill-cut"><strong>Disconnected Flashcard Decks:</strong> Discarded because isolated flashcards lack
+            structural context.</li>
+          <li class="pill-cut"><strong>Infinite Feeds & Gamified Streaks:</strong> Discarded because doomscrolling
+            undermines deep comprehension and retention.</li>
+        </ul>
+      </div>
+    </section>
+
+    <footer>
+      MicroLearning Studio • Canonical markdown plan: <code>devpost/scope.md</code>
+    </footer>
+  </div>
+
+  <script>
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+      const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tabName));
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const targetContent = document.getElementById('tab-' + tabName);
+      if (targetContent) targetContent.classList.add('active');
+    }
+  </script>
+</body>
+
+</html>
