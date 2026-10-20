@@ -1,6 +1,6 @@
 ﻿---
 doc: spec
-status: draft
+status: approved
 ---
 
 # MicroLearning Studio — Technical Spec
@@ -236,3 +236,4 @@ micro-learning/
 - **React Router Framework Mode Confirmed:** Eliminates custom router construction and provides production-ready routes (`/`, `/lessons/:id`, `/studio`).
 - **CSS Modules + CSS Custom Properties Confirmed:** Ensures clean local scoping without class collision and instant theme toggling.
 - **One Learner Uncertainty Discussed & Clarified:** The concern regarding building custom application plumbing in pure Vite vs. adopting framework conventions was resolved by selecting React Router Framework Mode, which handles route loaders, nested layouts, and code splitting out of the box.
+

@@ -1,0 +1,137 @@
+﻿/* Design Tokens & Theme Engine */
+:root {
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-serif: 'Georgia', 'Cambria', 'Times New Roman', serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+  --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 1. Clean Light Theme */
+:root, [data-theme="clean-light"] {
+  --bg-page: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #f1f5f9;
+  --bg-surface-hover: #e2e8f0;
+  --border-color: #e2e8f0;
+  --border-subtle: #cbd5e1;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-inverted: #ffffff;
+
+  --accent-primary: #0284c7;
+  --accent-hover: #0369a1;
+  --accent-muted: rgba(2, 132, 199, 0.1);
+  --accent-border: rgba(2, 132, 199, 0.3);
+
+  --feedback-success: #059669;
+  --feedback-success-bg: rgba(5, 150, 105, 0.1);
+  --feedback-warning: #d97706;
+  --feedback-warning-bg: rgba(217, 119, 6, 0.1);
+  --feedback-danger: #dc2626;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* 2. Focused Dark Theme */
+[data-theme="focused-dark"] {
+  --bg-page: #0b0f19;
+  --bg-surface: #111827;
+  --bg-surface-elevated: #1e293b;
+  --bg-surface-hover: #273549;
+  --border-color: #1f293d;
+  --border-subtle: #334155;
+
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-inverted: #0b0f19;
+
+  --accent-primary: #38bdf8;
+  --accent-hover: #7dd3fc;
+  --accent-muted: rgba(56, 189, 248, 0.15);
+  --accent-border: rgba(56, 189, 248, 0.3);
+
+  --feedback-success: #34d399;
+  --feedback-success-bg: rgba(52, 211, 153, 0.15);
+  --feedback-warning: #fbbf24;
+  --feedback-warning-bg: rgba(251, 191, 36, 0.15);
+  --feedback-danger: #f87171;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.55);
+}
+
+/* 3. Warm Editorial / Paper Theme */
+[data-theme="warm-editorial"] {
+  --bg-page: #fbf9f4;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #f4ede2;
+  --bg-surface-hover: #ece2d3;
+  --border-color: #e5dac9;
+  --border-subtle: #d3c4b0;
+
+  --text-primary: #29231e;
+  --text-secondary: #574c43;
+  --text-muted: #7d7065;
+  --text-inverted: #fbf9f4;
+
+  --accent-primary: #c2410c;
+  --accent-hover: #9a3412;
+  --accent-muted: rgba(194, 65, 12, 0.1);
+  --accent-border: rgba(194, 65, 12, 0.25);
+
+  --feedback-success: #15803d;
+  --feedback-success-bg: rgba(21, 128, 61, 0.1);
+  --feedback-warning: #b45309;
+  --feedback-warning-bg: rgba(180, 83, 9, 0.1);
+  --feedback-danger: #b91c1c;
+
+  --shadow-sm: 0 1px 3px rgba(41, 35, 30, 0.04);
+  --shadow-md: 0 4px 16px rgba(41, 35, 30, 0.07);
+  --shadow-lg: 0 12px 28px rgba(41, 35, 30, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  min-height: 100vh;
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+input, textarea, select {
+  font-family: inherit;
+}

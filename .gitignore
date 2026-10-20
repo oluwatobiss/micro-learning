@@ -1,7 +1,12 @@
-# Personal learning context
+﻿# Personal learning context
 /devpost/learner-profile.md
 
 # Credentials & environment
 .env
 .env.*
 !.env.example
+
+# Node & Build artifacts
+node_modules
+build
+.react-router
