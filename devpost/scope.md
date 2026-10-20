@@ -1,6 +1,6 @@
 ﻿---
 doc: scope
-status: draft
+status: approved
 ---
 
 # MicroLearning Studio
@@ -59,3 +59,4 @@ A compelling 60-second demo:
   - AI generic bullet-point summarizers (lacks pedagogical narrative).
   - Disconnected flashcard generators (fails to teach a cohesive concept).
   - Infinite scroll / social feeds / gamified streaks (distracts from deep comprehension).
+

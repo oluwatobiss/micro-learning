@@ -1,0 +1,814 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MicroLearning Studio — Product Requirements (PRD)</title>
+    <style>
+      :root {
+        --bg: #0b0f19;
+        --surface: #111827;
+        --surface-border: #1f293d;
+        --surface-hover: #1e293b;
+        --accent: #38bdf8;
+        --accent-muted: rgba(56, 189, 248, 0.15);
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --text-sub: #64748b;
+        --success: #34d399;
+        --warning: #fbbf24;
+        --danger: #f87171;
+        --font:
+          system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background-color: var(--bg);
+        color: var(--text-main);
+        font-family: var(--font);
+        line-height: 1.6;
+        padding: 2.5rem 1.5rem;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+      }
+
+      .container {
+        max-width: 950px;
+        width: 100%;
+      }
+
+      header {
+        margin-bottom: 2.5rem;
+        border-bottom: 1px solid var(--surface-border);
+        padding-bottom: 1.5rem;
+      }
+
+      .badge {
+        display: inline-block;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        background: var(--accent-muted);
+        color: var(--accent);
+        border: 1px solid rgba(56, 189, 248, 0.3);
+        margin-bottom: 0.75rem;
+      }
+
+      h1 {
+        font-size: 2.25rem;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(to right, #ffffff, #94a3b8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .tagline {
+        font-size: 1.15rem;
+        color: var(--text-muted);
+        max-width: 750px;
+      }
+
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--surface-border);
+        border-radius: 12px;
+        padding: 1.75rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      .card-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--accent);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      /* Interactive Journey Flow SVG */
+      .diagram-box {
+        background: #0d1322;
+        border: 1px solid var(--surface-border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        overflow-x: auto;
+      }
+
+      svg {
+        display: block;
+        margin: 0 auto;
+        max-width: 100%;
+        height: auto;
+      }
+
+      /* Tabs */
+      .tabs-nav {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.25rem;
+        border-bottom: 1px solid var(--surface-border);
+        padding-bottom: 0.5rem;
+        flex-wrap: wrap;
+      }
+
+      .tab-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        font-weight: 600;
+        font-size: 0.95rem;
+        padding: 0.6rem 1.1rem;
+        cursor: pointer;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+      }
+
+      .tab-btn:hover {
+        color: var(--text-main);
+        background: var(--surface-hover);
+      }
+
+      .tab-btn.active {
+        color: var(--accent);
+        background: var(--accent-muted);
+      }
+
+      .tab-content {
+        display: none;
+        animation: fadeIn 0.3s ease;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .theme-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      .theme-card {
+        border-radius: 8px;
+        padding: 1.25rem;
+        border: 1px solid var(--surface-border);
+      }
+
+      .theme-light {
+        background: #f8fafc;
+        color: #0f172a;
+        border-color: #cbd5e1;
+      }
+      .theme-light h4 {
+        color: #0f172a;
+        margin-bottom: 0.25rem;
+      }
+      .theme-light p {
+        color: #475569;
+        font-size: 0.85rem;
+      }
+
+      .theme-dark {
+        background: #0b0f19;
+        color: #f8fafc;
+        border-color: #1e293b;
+      }
+      .theme-dark h4 {
+        color: #38bdf8;
+        margin-bottom: 0.25rem;
+      }
+      .theme-dark p {
+        color: #94a3b8;
+        font-size: 0.85rem;
+      }
+
+      .theme-warm {
+        background: #fdfbf7;
+        color: #2c2523;
+        border-color: #e7e2d9;
+      }
+      .theme-warm h4 {
+        color: #9a3412;
+        margin-bottom: 0.25rem;
+      }
+      .theme-warm p {
+        color: #78350f;
+        font-size: 0.85rem;
+      }
+
+      /* Criteria Checklist */
+      .criteria-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .criteria-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 0.85rem 1rem;
+        border-radius: 8px;
+        font-size: 0.95rem;
+      }
+
+      .check-icon {
+        color: var(--success);
+        font-weight: bold;
+        flex-shrink: 0;
+      }
+
+      footer {
+        text-align: center;
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--surface-border);
+        color: var(--text-sub);
+        font-size: 0.85rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="badge">Devpost Learn • Step 3: Product Requirements</div>
+        <h1>MicroLearning Studio — PRD</h1>
+        <p class="tagline">
+          From long-form educational expertise to interactive, source-grounded
+          micro-lessons. Complete user journeys, surfaces, and observable
+          criteria.
+        </p>
+      </header>
+
+      <!-- Visual Journey Diagram -->
+      <section class="card">
+        <div class="card-title">
+          <svg
+            width="20"
+            height="20"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+            />
+          </svg>
+          The Two-Surface Product Architecture
+        </div>
+        <div class="diagram-box">
+          <svg viewBox="0 0 840 220" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker
+                id="arrow"
+                viewBox="0 0 10 10"
+                refX="6"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M 0 1 L 8 5 L 0 9 z" fill="#38bdf8" />
+              </marker>
+            </defs>
+
+            <!-- Surface 1: Reader Landing -->
+            <rect
+              x="10"
+              y="30"
+              width="230"
+              height="160"
+              rx="10"
+              fill="#1e293b"
+              stroke="#38bdf8"
+              stroke-width="1.5"
+            />
+            <text
+              x="125"
+              y="60"
+              fill="#38bdf8"
+              font-size="13"
+              font-weight="700"
+              text-anchor="middle"
+            >
+              SURFACE 1: READER LANDING
+            </text>
+            <text
+              x="125"
+              y="85"
+              fill="#f8fafc"
+              font-size="11"
+              text-anchor="middle"
+            >
+              • Featured Lesson Showcase
+            </text>
+            <text
+              x="125"
+              y="105"
+              fill="#f8fafc"
+              font-size="11"
+              text-anchor="middle"
+            >
+              • Instant Play (No Login)
+            </text>
+            <text
+              x="125"
+              y="125"
+              fill="#f8fafc"
+              font-size="11"
+              text-anchor="middle"
+            >
+              • Theme Switcher (3 Modes)
+            </text>
+            <text
+              x="125"
+              y="155"
+              fill="#34d399"
+              font-size="10.5"
+              font-weight="600"
+              text-anchor="middle"
+            >
+              → Opens Interactive Card Player
+            </text>
+
+            <!-- Top nav bridge -->
+            <path
+              d="M 240 70 L 310 70"
+              stroke="#38bdf8"
+              stroke-width="2"
+              marker-end="url(#arrow)"
+            />
+            <text
+              x="275"
+              y="60"
+              fill="#94a3b8"
+              font-size="9.5"
+              text-anchor="middle"
+            >
+              Studio Link
+            </text>
+
+            <!-- Surface 2: Creator Studio -->
+            <rect
+              x="315"
+              y="30"
+              width="240"
+              height="160"
+              rx="10"
+              fill="#1e293b"
+              stroke="#fbbf24"
+              stroke-width="1.5"
+            />
+            <text
+              x="435"
+              y="60"
+              fill="#fbbf24"
+              font-size="13"
+              font-weight="700"
+              text-anchor="middle"
+            >
+              SURFACE 2: CREATOR STUDIO
+            </text>
+            <text
+              x="435"
+              y="85"
+              fill="#f8fafc"
+              font-size="11"
+              text-anchor="middle"
+            >
+              • Source Input & Auth Toggle
+            </text>
+            <text
+              x="435"
+              y="105"
+              fill="#f8fafc"
+              font-size="11"
+              text-anchor="middle"
+            >
+              • Multi-Stage Pipeline Progress
+            </text>
+            <text
+              x="435"
+              y="125"
+              fill="#f8fafc"
+              font-size="11"
+              text-anchor="middle"
+            >
+              • Deck Editor (Lock / Reorder)
+            </text>
+            <text
+              x="435"
+              y="155"
+              fill="#fbbf24"
+              font-size="10.5"
+              font-weight="600"
+              text-anchor="middle"
+            >
+              → Publish / View as Reader
+            </text>
+
+            <!-- Return bridge to reader -->
+            <path
+              d="M 555 110 L 610 110"
+              stroke="#34d399"
+              stroke-width="2"
+              marker-end="url(#arrow)"
+            />
+            <text
+              x="582"
+              y="100"
+              fill="#94a3b8"
+              font-size="9.5"
+              text-anchor="middle"
+            >
+              Publish
+            </text>
+
+            <!-- Player Container -->
+            <rect
+              x="615"
+              y="30"
+              width="215"
+              height="160"
+              rx="10"
+              fill="#1e293b"
+              stroke="#34d399"
+              stroke-width="1.5"
+            />
+            <text
+              x="722"
+              y="60"
+              fill="#34d399"
+              font-size="13"
+              font-weight="700"
+              text-anchor="middle"
+            >
+              STANDALONE PLAYER
+            </text>
+            <text
+              x="722"
+              y="85"
+              fill="#f8fafc"
+              font-size="11"
+              text-anchor="middle"
+            >
+              • Narrative Card Progress
+            </text>
+            <text
+              x="722"
+              y="105"
+              fill="#f8fafc"
+              font-size="11"
+              text-anchor="middle"
+            >
+              • Grounded Checkpoint
+            </text>
+            <text
+              x="722"
+              y="125"
+              fill="#f8fafc"
+              font-size="11"
+              text-anchor="middle"
+            >
+              • Instant Feedback & Explanation
+            </text>
+            <text
+              x="722"
+              y="155"
+              fill="#38bdf8"
+              font-size="10.5"
+              font-weight="600"
+              text-anchor="middle"
+            >
+              → Lesson Completion & Source
+            </text>
+          </svg>
+        </div>
+      </section>
+
+      <!-- Interactive PRD Sections -->
+      <section class="card">
+        <div class="card-title">Product Specification & Surfaces</div>
+        <div class="tabs-nav">
+          <button class="tab-btn active" onclick="switchTab('reader')">
+            1. Reader Landing & Player
+          </button>
+          <button class="tab-btn" onclick="switchTab('studio')">
+            2. Creator Studio & Editor
+          </button>
+          <button class="tab-btn" onclick="switchTab('themes')">
+            3. Bespoke Themes
+          </button>
+          <button class="tab-btn" onclick="switchTab('criteria')">
+            4. Acceptance Criteria
+          </button>
+          <button class="tab-btn" onclick="switchTab('states')">
+            5. States & Edge Cases
+          </button>
+        </div>
+
+        <!-- Tab 1: Reader -->
+        <div id="tab-reader" class="tab-content active">
+          <h3 style="margin-bottom: 0.5rem; color: var(--accent)">
+            Reader Landing & Interactive Card Deck
+          </h3>
+          <p
+            style="
+              color: var(--text-muted);
+              margin-bottom: 1rem;
+              font-size: 0.95rem;
+            "
+          >
+            The reader experiences a calm, anti-doomscroll environment. No login
+            required.
+          </p>
+          <div
+            style="
+              background: rgba(255, 255, 255, 0.03);
+              padding: 1.25rem;
+              border-radius: 8px;
+              border: 1px solid var(--surface-border);
+            "
+          >
+            <ul
+              style="
+                padding-left: 1.25rem;
+                color: var(--text-muted);
+                font-size: 0.95rem;
+                line-height: 1.8;
+              "
+            >
+              <li>
+                <strong>Showcase Discovery:</strong> Cards show lesson title,
+                author attribution, estimated time (e.g. 4 min), and source
+                link.
+              </li>
+              <li>
+                <strong>Card Progression:</strong> Visible Next, Previous, and
+                progress indicators (e.g. Card 2 of 5). No hidden gesture-only
+                navigation.
+              </li>
+              <li>
+                <strong>Grounded Checkpoint:</strong> Interactive
+                multiple-choice check grounded in source text. Must answer
+                before advancing.
+              </li>
+              <li>
+                <strong>Immediate Explanation:</strong> Unlocks pedagogical
+                explanation immediately upon answering with visual confirmation.
+              </li>
+              <li>
+                <strong>Completion Screen:</strong> Key takeaway recap,
+                completion badge, and link to read original full-length
+                publication.
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Tab 2: Studio -->
+        <div id="tab-studio" class="tab-content">
+          <h3 style="margin-bottom: 0.5rem; color: var(--warning)">
+            Creator Studio & Adaptive Pipeline
+          </h3>
+          <p
+            style="
+              color: var(--text-muted);
+              margin-bottom: 1rem;
+              font-size: 0.95rem;
+            "
+          >
+            Creators retain complete editorial authority with high-speed editing
+            tools.
+          </p>
+          <div
+            style="
+              background: rgba(255, 255, 255, 0.03);
+              padding: 1.25rem;
+              border-radius: 8px;
+              border: 1px solid var(--surface-border);
+            "
+          >
+            <ul
+              style="
+                padding-left: 1.25rem;
+                color: var(--text-muted);
+                font-size: 0.95rem;
+                line-height: 1.8;
+              "
+            >
+              <li>
+                <strong>Input Validation:</strong> Title, author, original URL,
+                minimum 200 words, and authorization acknowledgement checkbox.
+              </li>
+              <li>
+                <strong>Quick Start:</strong> "Load Sample Article" button
+                populates rich educational sample text for instant demoing.
+              </li>
+              <li>
+                <strong>Generation Stages:</strong> Step-by-step progress
+                tracking: <code>Understanding source</code> →
+                <code>Planning lesson</code> → <code>Creating cards</code> →
+                <code>Creating checks</code> → <code>Ready</code>.
+              </li>
+              <li>
+                <strong>Deck Editor:</strong> Edit text, reorder cards, change
+                card types (Narrative, Comparison, Checkpoint), lock cards, and
+                duplicate/delete.
+              </li>
+              <li>
+                <strong>Regeneration & Publish:</strong> Regenerate individual
+                cards without wiping the deck. Click Publish to view directly as
+                a reader.
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Tab 3: Themes -->
+        <div id="tab-themes" class="tab-content">
+          <h3 style="margin-bottom: 0.5rem; color: var(--accent)">
+            Three Distinctive Reading Environments
+          </h3>
+          <p style="color: var(--text-muted); font-size: 0.95rem">
+            Premium typography and contrast options without unnecessary
+            decorative bloat:
+          </p>
+          <div class="theme-grid">
+            <div class="theme-card theme-light">
+              <h4>Clean Light</h4>
+              <p>
+                Crisp white/neutral slate, high-contrast dark text, clean modern
+                feel for daytime study.
+              </p>
+            </div>
+            <div class="theme-card theme-dark">
+              <h4>Focused Dark</h4>
+              <p>
+                Deep navy/charcoal, elevated dark surfaces, glowing cyan accents
+                for immersive evening reading.
+              </p>
+            </div>
+            <div class="theme-card theme-warm">
+              <h4>Warm Editorial</h4>
+              <p>
+                Soft cream/linen background, sepia ink, warm-stone borders
+                inspired by physical literary essays.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 4: Criteria -->
+        <div id="tab-criteria" class="tab-content">
+          <h3 style="margin-bottom: 0.75rem; color: var(--success)">
+            Observable Acceptance Criteria
+          </h3>
+          <ul class="criteria-list">
+            <li class="criteria-item">
+              <span class="check-icon">✓</span>
+              <div>
+                <strong>Friction-Free Reader Start:</strong> Reader landing page
+                displays featured lesson; clicking it opens the player on Card 1
+                without prompts.
+              </div>
+            </li>
+            <li class="criteria-item">
+              <span class="check-icon">✓</span>
+              <div>
+                <strong>Adaptive Card Count:</strong> Lessons adaptively
+                generate between 4 to 8 cards based on source density, with
+                checkpoints at natural intervals.
+              </div>
+            </li>
+            <li class="criteria-item">
+              <span class="check-icon">✓</span>
+              <div>
+                <strong>Input Guardrails:</strong> "Generate Lesson" button is
+                disabled until valid source length and authorization checkbox
+                are confirmed.
+              </div>
+            </li>
+            <li class="criteria-item">
+              <span class="check-icon">✓</span>
+              <div>
+                <strong>Studio Editorial Control:</strong> Creator can edit card
+                headlines, body text, reorder cards, and lock approved wording.
+              </div>
+            </li>
+            <li class="criteria-item">
+              <span class="check-icon">✓</span>
+              <div>
+                <strong>Grounded Checkpoint Verification:</strong> Quiz reveals
+                instant correct/incorrect visual state and educational
+                explanation before allowing progression.
+              </div>
+            </li>
+            <li class="criteria-item">
+              <span class="check-icon">✓</span>
+              <div>
+                <strong>Theme Switching:</strong> Header theme toggle updates
+                all colors, card surfaces, and text across the entire
+                application instantly.
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Tab 5: States -->
+        <div id="tab-states" class="tab-content">
+          <h3 style="margin-bottom: 0.75rem; color: var(--text-main)">
+            States and Edge Cases
+          </h3>
+          <ul
+            style="
+              padding-left: 1.25rem;
+              color: var(--text-muted);
+              font-size: 0.95rem;
+              line-height: 1.8;
+            "
+          >
+            <li>
+              <strong>Empty Input State:</strong> Clear placeholder hints and
+              "Load Sample Article" quick-action button.
+            </li>
+            <li>
+              <strong>Generation Progress State:</strong> Visible progress
+              indicator cycling through the 5 extraction stages.
+            </li>
+            <li>
+              <strong>Input Error State:</strong> Inline warning if pasted text
+              is under 200 words or missing author attribution.
+            </li>
+            <li>
+              <strong>Locked Cards:</strong> Locked cards show a lock icon and
+              are preserved during any deck regeneration.
+            </li>
+            <li>
+              <strong>Local Persistence:</strong> Published lessons are stored
+              in local storage so they remain available when browsing lessons.
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <footer>
+        MicroLearning Studio • Canonical markdown PRD:
+        <code>devpost/prd.md</code>
+      </footer>
+    </div>
+
+    <script>
+      function switchTab(tabName) {
+        document
+          .querySelectorAll(".tab-btn")
+          .forEach((btn) => btn.classList.remove("active"));
+        document
+          .querySelectorAll(".tab-content")
+          .forEach((content) => content.classList.remove("active"));
+
+        const activeBtn = Array.from(
+          document.querySelectorAll(".tab-btn"),
+        ).find((b) => b.getAttribute("onclick").includes(tabName));
+        if (activeBtn) activeBtn.classList.add("active");
+
+        const targetContent = document.getElementById("tab-" + tabName);
+        if (targetContent) targetContent.classList.add("active");
+      }
+    </script>
+  </body>
+</html>
