@@ -71,3 +71,37 @@ Reflection: not established
 Activity mode: not established
 
 ## Revisions
+
+### Checkpoint 1 Refinement: Reader UX, Persistence, Content Rendering & Environment Audit
+
+- **Date:** October 20, 2026
+- **Status:** Verified & Complete
+- **Scope & Implementation:**
+  1. **Reader State Persistence:**
+     - Created `app/services/progress.ts` implementing versioned reader state persistence (`mls_progress_<lessonId>_v<version>`).
+     - Persists card index, selected checkpoint answers, completion status, and timestamps.
+     - Features safe bounds clamping, malformed JSON recovery, and content version change invalidation. Kept completely decoupled from theme settings.
+     - Preserves completed status when learners revisit lesson cards.
+  2. **Dedicated Lesson Completion Experience:**
+     - Created `app/components/LessonCompletion.tsx` and `.module.css`.
+     - Displays celebratory completion message, lesson title recap, key takeaways, primary action to "Explore Available Lessons →", configurable feedback URL ("Share Feedback"), and "Review Lesson Cards ↺".
+     - Fixed `app/routes/lessons.$id.tsx` to display completion in-place without abrupt redirection to home.
+  3. **Responsive Bespoke Reader Design:**
+     - Refined `app/components/Header.tsx` and `.module.css` with nowrap badges and responsive font clamp to eliminate awkward mobile label wrapping.
+     - Refined `LessonCard.module.css` removing rigid `min-height: 380px`, allowing natural content expansion while maintaining comfortable reading line lengths and preventing horizontal overflow.
+     - Enhanced `CheckpointCard.tsx` with accessible 48px touch targets, non-color-only feedback badges (`✓ Correct`, `✕ Your Choice`), and persistent option state.
+     - Added `@media (prefers-reduced-motion: reduce)` accessibility rules across all card transitions.
+  4. **Markdown Rendering & Software Development Lesson:**
+     - Integrated `react-markdown` (v10.1.0) and `remark-gfm` (v4.0.1) in `app/components/MarkdownContent.tsx`.
+     - Custom renderers for fenced code blocks with language labels and clipboard copy button. No raw HTML execution or `dangerouslySetInnerHTML`.
+     - Authored complete technical sample lesson: `React State & The Component Render Cycle` (6 cards, JSX code blocks, render snapshot mental model, grounded checkpoint, attributed to CodeSweetly).
+  5. **Instructionally Justified Visual Illustrations:**
+     - Created `app/components/InstructionalDiagram.tsx` rendering an accessible, responsive, theme-aware SVG diagram (`react-render-loop`) that visually communicates the state snapshot and re-render cycle.
+  6. **Quiz Quality & Content Audit:**
+     - Audited all checkpoints to guarantee self-contained wording, plausible options, single unambiguous correct answers, and constructive educational explanations.
+  7. **Toolchain & WSL Environment Audit:**
+     - Confirmed Node.js v24.15.0 and npm 11.14.1 on Windows runtime; 0 npm vulnerabilities.
+     - Confirmed repository resides on WSL2 Ubuntu ext4 filesystem (`/home/oluwatobiss/projects/micro-learning`), accessed via Windows UNC / mapped `Z:` drive.
+  8. **Automated Verification:**
+     - Added `tests_reader.mjs` test suite and `"test"` script in `package.json`.
+     - Verified: `npm run typecheck` (0 errors), `npm run build` (production build passes), and `npm test` (4/4 tests pass).

@@ -1,37 +1,43 @@
-﻿.playerWrapper {
+.playerWrapper {
   max-width: 760px;
   width: 100%;
-  margin: 2rem auto;
-  padding: 0 1rem;
+  margin: 2rem auto 4rem;
+  padding: 0 1.25rem;
 }
 
 .topBar {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
 .metaRow {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.65rem;
-  font-size: 0.85rem;
-  color: var(--text-muted);
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.88rem;
 }
 
-.sourceBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  color: var(--accent-primary);
-  font-weight: 500;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+.lessonTitle {
+  font-weight: 600;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
 }
 
 .stepCounter {
-  font-weight: 600;
+  font-weight: 700;
   font-family: var(--font-mono);
-  color: var(--text-secondary);
+  color: var(--text-primary);
+  font-size: 0.84rem;
+  background-color: var(--bg-surface-elevated);
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .progressBarContainer {
@@ -44,9 +50,34 @@
 
 .progressBarFill {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent-primary), #34d399);
+  background: linear-gradient(
+    90deg,
+    var(--accent-primary),
+    var(--feedback-success)
+  );
   border-radius: var(--radius-full);
   transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.completedBanner {
+  background-color: var(--feedback-success-bg);
+  border: 1px solid rgba(5, 150, 105, 0.25);
+  border-radius: var(--radius-md);
+  padding: 0.65rem 1rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.86rem;
+  color: var(--feedback-success);
+}
+
+.viewRecapBtn {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+  color: var(--feedback-success);
 }
 
 .controlsRow {
@@ -60,17 +91,26 @@
 .btnGroup {
   display: flex;
   gap: 0.75rem;
+  align-items: center;
 }
 
 .navBtn {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  justify-content: center;
+  gap: 0.45rem;
   padding: 0.75rem 1.4rem;
   border-radius: var(--radius-md);
   font-size: 0.95rem;
   font-weight: 600;
+  min-height: 46px; /* Touch target */
   transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.navBtn:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
 }
 
 .prevBtn {
@@ -82,17 +122,18 @@
 .prevBtn:hover:not(:disabled) {
   background-color: var(--bg-surface-elevated);
   color: var(--text-primary);
+  border-color: var(--border-subtle);
 }
 
 .prevBtn:disabled {
-  opacity: 0.35;
+  opacity: 0.3;
   cursor: not-allowed;
 }
 
 .nextBtn {
   background-color: var(--accent-primary);
   color: var(--text-inverted);
-  box-shadow: 0 2px 8px var(--accent-muted);
+  box-shadow: 0 2px 10px var(--accent-muted);
 }
 
 .nextBtn:hover:not(:disabled) {
@@ -100,9 +141,13 @@
   transform: translateY(-1px);
 }
 
-.nextBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.nextBtnDisabled {
+  background-color: var(--bg-surface-elevated) !important;
+  color: var(--text-muted) !important;
+  border: 1px dashed var(--border-color) !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+  transform: none !important;
 }
 
 .sourceLink {
@@ -111,9 +156,41 @@
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
+  white-space: nowrap;
   transition: color var(--transition-fast);
 }
 
 .sourceLink:hover {
   color: var(--accent-primary);
+}
+
+@media (max-width: 640px) {
+  .playerWrapper {
+    margin: 1rem auto 3rem;
+    padding: 0 0.85rem;
+  }
+
+  .controlsRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .btnGroup {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 0.65rem;
+  }
+
+  .navBtn {
+    padding: 0.75rem 0.85rem;
+    font-size: 0.9rem;
+    width: 100%;
+  }
+
+  .sourceLink {
+    text-align: center;
+    justify-content: center;
+    padding: 0.4rem 0;
+  }
 }

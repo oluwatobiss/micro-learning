@@ -5,14 +5,17 @@
   "scripts": {
     "dev": "react-router dev",
     "build": "react-router build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test tests_reader.mjs"
   },
   "dependencies": {
     "@react-router/node": "7.18.4",
     "isbot": "^5.1.22",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-router": "7.18.4"
+    "react-markdown": "^10.1.0",
+    "react-router": "7.18.4",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@react-router/dev": "7.18.4",

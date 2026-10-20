@@ -1,0 +1,202 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+
+class MockLocalStorage {
+  constructor() {
+    this.store = {};
+  }
+  getItem(key) {
+    return this.store[key] || null;
+  }
+  setItem(key, value) {
+    this.store[key] = String(value);
+  }
+  removeItem(key) {
+    delete this.store[key];
+  }
+  clear() {
+    this.store = {};
+  }
+}
+
+globalThis.localStorage = new MockLocalStorage();
+globalThis.window = globalThis;
+
+import {
+  DEFAULT_LESSONS,
+  SAMPLE_LESSON,
+  REACT_STATE_LESSON,
+} from "./app/services/sampleLesson.ts";
+import { progressService } from "./app/services/progress.ts";
+
+test("1. Quiz Quality and Content Audit", () => {
+  assert.equal(
+    DEFAULT_LESSONS.length,
+    2,
+    "Must contain exactly 2 default lessons",
+  );
+
+  for (const lesson of DEFAULT_LESSONS) {
+    assert.ok(lesson.id, "Lesson must have an id");
+    assert.ok(lesson.title, "Lesson must have a title");
+    assert.ok(lesson.cards.length >= 4, "Lesson must have at least 4 cards");
+    assert.ok(lesson.version >= 1, "Lesson must have a version >= 1");
+    assert.ok(
+      Array.isArray(lesson.keyTakeaways),
+      "Lesson must have keyTakeaways array",
+    );
+    assert.ok(
+      lesson.keyTakeaways.length >= 2,
+      "Lesson must have at least 2 key takeaways",
+    );
+    assert.ok(lesson.sourceUrl, "Lesson must have sourceUrl");
+
+    // Checkpoints audit
+    const checkpoints = lesson.cards.filter((c) => c.type === "checkpoint");
+    assert.ok(
+      checkpoints.length >= 1,
+      `${lesson.id} must have at least one checkpoint card`,
+    );
+
+    for (const cpCard of checkpoints) {
+      const cp = cpCard.checkpoint;
+      assert.ok(cp, `Card ${cpCard.id} missing checkpoint object`);
+      assert.ok(
+        cp.question.length > 20,
+        `Question on ${cpCard.id} must be substantial`,
+      );
+      assert.ok(
+        !cp.question.toLowerCase().includes("example above"),
+        `Question on ${cpCard.id} must not refer to absent 'example above' without self-contained context`,
+      );
+      assert.ok(
+        cp.options.length >= 3,
+        `Checkpoint on ${cpCard.id} must have at least 3 options`,
+      );
+
+      const correctOptions = cp.options.filter((o) => o.isCorrect === true);
+      assert.equal(
+        correctOptions.length,
+        1,
+        `Checkpoint on ${cpCard.id} must have exactly one correct option`,
+      );
+      assert.ok(
+        cp.explanation.length > 30,
+        `Explanation on ${cpCard.id} must be substantial and educational`,
+      );
+    }
+  }
+});
+
+test("2. Reader State Persistence - Lifecycle & Graceful Degrade", () => {
+  localStorage.clear();
+  const lessonId = "react-state-render-cycle";
+  const version = 1;
+  const totalCards = 6;
+
+  // Initial state should be null
+  assert.equal(
+    progressService.getProgress(lessonId, version, totalCards),
+    null,
+  );
+
+  // Record an answer
+  progressService.recordAnswer(lessonId, version, "react-card-4", "opt-b");
+  let saved = progressService.getProgress(lessonId, version, totalCards);
+  assert.ok(saved);
+  assert.equal(saved.selectedAnswers["react-card-4"], "opt-b");
+  assert.equal(saved.isCompleted, false);
+
+  // Clamping: test corrupted out-of-bounds card index
+  localStorage.setItem(
+    "microlearning_reader_progress_v1",
+    JSON.stringify({
+      [lessonId]: {
+        lessonId,
+        version,
+        currentCardIndex: 999,
+        selectedAnswers: { "react-card-4": "opt-b" },
+        isCompleted: false,
+      },
+    }),
+  );
+  saved = progressService.getProgress(lessonId, version, totalCards);
+  assert.equal(
+    saved.currentCardIndex,
+    0,
+    "Out-of-bounds index must fall back gracefully to 0",
+  );
+
+  // Corrupted non-JSON storage
+  localStorage.setItem("microlearning_reader_progress_v1", "invalid-json{{[");
+  saved = progressService.getProgress(lessonId, version, totalCards);
+  assert.equal(
+    saved,
+    null,
+    "Malformed JSON in storage must safely return null without throwing",
+  );
+
+  // Version mismatch
+  localStorage.setItem(
+    "microlearning_reader_progress_v1",
+    JSON.stringify({
+      [lessonId]: {
+        lessonId,
+        version: 999,
+        currentCardIndex: 2,
+        selectedAnswers: {},
+      },
+    }),
+  );
+  saved = progressService.getProgress(lessonId, version, totalCards);
+  assert.equal(
+    saved,
+    null,
+    "Version mismatch must not bleed into current version",
+  );
+});
+
+test("3. Completion State & Revisit Workflow", () => {
+  localStorage.clear();
+  const lessonId = "micro-learning-architecture";
+  const version = 1;
+  const totalCards = 5;
+
+  // Complete lesson
+  progressService.markCompleted(lessonId, version);
+  let saved = progressService.getProgress(lessonId, version, totalCards);
+  assert.equal(saved.isCompleted, true);
+  assert.ok(saved.completedAt);
+
+  // Updating position during review does not erase completion flag
+  progressService.setCardIndex(lessonId, version, 0);
+  saved = progressService.getProgress(lessonId, version, totalCards);
+  assert.equal(
+    saved.isCompleted,
+    true,
+    "Revisiting cards must preserve completed status",
+  );
+  assert.equal(saved.currentCardIndex, 0);
+});
+
+test("4. Multi-lesson Independence", () => {
+  localStorage.clear();
+  progressService.setCardIndex("lesson-a", 1, 3);
+  progressService.recordAnswer("lesson-a", 1, "q1", "opt-1");
+
+  progressService.setCardIndex("lesson-b", 1, 1);
+  progressService.recordAnswer("lesson-b", 1, "q2", "opt-2");
+
+  const a = progressService.getProgress("lesson-a", 1, 5);
+  const b = progressService.getProgress("lesson-b", 1, 5);
+
+  assert.equal(a.currentCardIndex, 3);
+  assert.equal(a.selectedAnswers["q1"], "opt-1");
+  assert.equal(b.currentCardIndex, 1);
+  assert.equal(b.selectedAnswers["q2"], "opt-2");
+  assert.equal(
+    a.selectedAnswers["q2"],
+    undefined,
+    "Lessons must not share answer records",
+  );
+});

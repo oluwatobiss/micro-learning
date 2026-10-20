@@ -1,4 +1,4 @@
-﻿.container {
+.container {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
@@ -6,6 +6,9 @@
   box-shadow: var(--shadow-md);
   text-align: center;
   animation: fadeIn 0.3s ease;
+  transition:
+    background-color var(--transition-normal),
+    border-color var(--transition-normal);
 }
 
 @keyframes fadeIn {
@@ -20,8 +23,8 @@
 }
 
 .celebrationBadge {
-  width: 56px;
-  height: 56px;
+  width: 58px;
+  height: 58px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--feedback-success), #059669);
   color: #ffffff;
@@ -34,99 +37,163 @@
 }
 
 .title {
-  font-size: 2rem;
+  font-size: 2.1rem;
   font-weight: 800;
   color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.025em;
+}
+
+.lessonTitleRecap {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--accent-primary);
   margin-bottom: 0.75rem;
-  letter-spacing: -0.02em;
 }
 
 .subtitle {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   color: var(--text-secondary);
-  max-width: 550px;
+  max-width: 580px;
   margin: 0 auto 2rem;
+  line-height: 1.6;
 }
 
 .recapBox {
   background-color: var(--bg-surface-elevated);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 1.5rem;
-  max-width: 580px;
+  padding: 1.5rem 1.75rem;
+  max-width: 600px;
   margin: 0 auto 2rem;
   text-align: left;
 }
 
 .recapHeader {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
   color: var(--accent-primary);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
-.recapText {
-  font-size: 0.98rem;
+.takeawayList {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  font-size: 0.96rem;
   color: var(--text-primary);
-  line-height: 1.6;
+  line-height: 1.55;
 }
 
 .actions {
   display: flex;
   justify-content: center;
-  gap: 1rem;
+  gap: 0.85rem;
   flex-wrap: wrap;
+  margin-bottom: 1.75rem;
 }
 
 .primaryBtn {
   background-color: var(--accent-primary);
   color: var(--text-inverted);
-  padding: 0.8rem 1.6rem;
+  padding: 0.75rem 1.5rem;
   border-radius: var(--radius-md);
   font-weight: 600;
-  font-size: 0.98rem;
+  font-size: 0.96rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  box-shadow: 0 2px 10px var(--accent-muted);
   transition: all var(--transition-fast);
 }
 
 .primaryBtn:hover {
   background-color: var(--accent-hover);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
 .secondaryBtn {
   background-color: var(--bg-surface);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
-  padding: 0.8rem 1.6rem;
+  padding: 0.75rem 1.4rem;
   border-radius: var(--radius-md);
   font-weight: 600;
-  font-size: 0.98rem;
+  font-size: 0.96rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   transition: all var(--transition-fast);
+  cursor: pointer;
 }
 
 .secondaryBtn:hover {
   background-color: var(--bg-surface-elevated);
+  border-color: var(--border-subtle);
 }
 
-.sourceBox {
-  margin-top: 2rem;
+.secondaryBtn:focus-visible,
+.primaryBtn:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+.linksRow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
   font-size: 0.88rem;
   color: var(--text-muted);
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border-color);
 }
 
-.sourceLink {
-  color: var(--accent-primary);
+.linkItem {
+  color: var(--text-secondary);
   text-decoration: underline;
   text-underline-offset: 3px;
+  transition: color var(--transition-fast);
+}
+
+.linkItem:hover {
+  color: var(--accent-primary);
 }
 
 @media (max-width: 640px) {
   .container {
     padding: 2rem 1.25rem;
+    border-radius: var(--radius-md);
   }
+
   .title {
-    font-size: 1.6rem;
+    font-size: 1.65rem;
+  }
+
+  .lessonTitleRecap {
+    font-size: 1rem;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .primaryBtn,
+  .secondaryBtn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .linksRow {
+    flex-direction: column;
+    gap: 0.65rem;
   }
 }

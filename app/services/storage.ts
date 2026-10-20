@@ -1,32 +1,49 @@
 import type { Lesson } from "../types/lesson";
-import { SAMPLE_LESSON } from "./sampleLesson";
+import { DEFAULT_LESSONS, SAMPLE_LESSON } from "./sampleLesson";
 
-const STORAGE_KEY = "microlearning_lessons_v1";
+const STORAGE_KEY = "microlearning_lessons_v2";
 
 export const storageService = {
   getLessons(): Lesson[] {
     if (typeof window === "undefined") {
-      return [SAMPLE_LESSON];
+      return DEFAULT_LESSONS;
     }
 
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (!stored) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify([SAMPLE_LESSON]));
-        return [SAMPLE_LESSON];
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_LESSONS));
+        return DEFAULT_LESSONS;
       }
       const parsed = JSON.parse(stored) as Lesson[];
       if (!Array.isArray(parsed) || parsed.length === 0) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify([SAMPLE_LESSON]));
-        return [SAMPLE_LESSON];
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_LESSONS));
+        return DEFAULT_LESSONS;
       }
-      return parsed;
+
+      // Ensure default lessons exist in the list
+      const existingIds = new Set(parsed.map((l) => l.id));
+      let hasChanges = false;
+      const combined = [...parsed];
+
+      for (const defaultLesson of DEFAULT_LESSONS) {
+        if (!existingIds.has(defaultLesson.id)) {
+          combined.push(defaultLesson);
+          hasChanges = true;
+        }
+      }
+
+      if (hasChanges) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(combined));
+      }
+
+      return combined;
     } catch (e) {
       console.warn(
-        "Failed to parse localStorage lessons, falling back to sample:",
+        "Failed to parse localStorage lessons, falling back to defaults:",
         e,
       );
-      return [SAMPLE_LESSON];
+      return DEFAULT_LESSONS;
     }
   },
 
@@ -57,14 +74,14 @@ export const storageService = {
     const filtered = lessons.filter((l) => l.id !== id);
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify(filtered.length ? filtered : [SAMPLE_LESSON]),
+      JSON.stringify(filtered.length ? filtered : DEFAULT_LESSONS),
     );
   },
 
   resetDefaults(): Lesson[] {
     if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([SAMPLE_LESSON]));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_LESSONS));
     }
-    return [SAMPLE_LESSON];
+    return DEFAULT_LESSONS;
   },
 };

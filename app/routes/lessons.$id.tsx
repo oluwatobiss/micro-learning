@@ -59,13 +59,5 @@ export default function LessonPlayerRoute() {
     );
   }
 
-  return (
-    <ReaderPlayer
-      lesson={lesson}
-      onFinish={() => {
-        // Can navigate back or show complete
-        navigate("/");
-      }}
-    />
-  );
+  return <ReaderPlayer lesson={lesson} />;
 }
