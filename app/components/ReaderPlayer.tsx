@@ -1,6 +1,8 @@
-﻿import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import type { Lesson } from '../types/lesson';
 import { LessonCard } from './LessonCard';
+import { CheckpointCard } from './CheckpointCard';
+import { LessonCompletion } from './LessonCompletion';
 import styles from './ReaderPlayer.module.css';
 
 interface ReaderPlayerProps {
@@ -10,20 +12,33 @@ interface ReaderPlayerProps {
 
 export const ReaderPlayer: React.FC<ReaderPlayerProps> = ({ lesson, onFinish }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
+  const [answeredCheckpoints, setAnsweredCheckpoints] = useState<Record<string, boolean>>({});
+  const [isCompleted, setIsCompleted] = useState(false);
+
   const totalCards = lesson.cards.length;
   const currentCard = lesson.cards[currentIndex];
 
   const isLastCard = currentIndex === totalCards - 1;
   const progressPercent = Math.round(((currentIndex + 1) / totalCards) * 100);
 
+  // Check if current card requires an answer before advancing
+  const isCurrentCardCheckpoint = currentCard?.type === 'checkpoint' && !!currentCard.checkpoint;
+  const hasAnsweredCurrentCheckpoint = isCurrentCardCheckpoint 
+    ? !!answeredCheckpoints[currentCard.id] 
+    : true;
+
   const handleNext = useCallback(() => {
+    if (!hasAnsweredCurrentCheckpoint) return;
+
     if (currentIndex < totalCards - 1) {
       setCurrentIndex((prev) => prev + 1);
-    } else if (onFinish) {
-      onFinish();
+    } else {
+      setIsCompleted(true);
+      if (onFinish) {
+        onFinish();
+      }
     }
-  }, [currentIndex, totalCards, onFinish]);
+  }, [currentIndex, totalCards, hasAnsweredCurrentCheckpoint, onFinish]);
 
   const handlePrev = useCallback(() => {
     if (currentIndex > 0) {
@@ -31,10 +46,17 @@ export const ReaderPlayer: React.FC<ReaderPlayerProps> = ({ lesson, onFinish }) 
     }
   }, [currentIndex]);
 
+  const handleRestart = () => {
+    setCurrentIndex(0);
+    setAnsweredCheckpoints({});
+    setIsCompleted(false);
+  };
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight') {
+      if (isCompleted) return;
+      if (e.key === 'ArrowRight' && hasAnsweredCurrentCheckpoint) {
         handleNext();
       } else if (e.key === 'ArrowLeft') {
         handlePrev();
@@ -42,7 +64,15 @@ export const ReaderPlayer: React.FC<ReaderPlayerProps> = ({ lesson, onFinish }) 
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleNext, handlePrev]);
+  }, [handleNext, handlePrev, hasAnsweredCurrentCheckpoint, isCompleted]);
+
+  if (isCompleted) {
+    return (
+      <div className={styles.playerWrapper}>
+        <LessonCompletion lesson={lesson} onRestart={handleRestart} />
+      </div>
+    );
+  }
 
   if (!currentCard) {
     return <div className={styles.playerWrapper}>Lesson has no cards.</div>;
@@ -70,13 +100,26 @@ export const ReaderPlayer: React.FC<ReaderPlayerProps> = ({ lesson, onFinish }) 
         </div>
       </div>
 
-      {/* Main Card */}
-      <LessonCard card={currentCard} />
+      {/* Main Card: Narrative Card or Checkpoint Card */}
+      {isCurrentCardCheckpoint && currentCard.checkpoint ? (
+        <CheckpointCard
+          checkpoint={currentCard.checkpoint}
+          onAnswerSelected={(_isCorrect) => {
+            setAnsweredCheckpoints((prev) => ({
+              ...prev,
+              [currentCard.id]: true,
+            }));
+          }}
+        />
+      ) : (
+        <LessonCard card={currentCard} />
+      )}
 
       {/* Visible Bottom Controls */}
       <div className={styles.controlsRow}>
         <div className={styles.btnGroup}>
           <button
+            type="button"
             onClick={handlePrev}
             disabled={currentIndex === 0}
             className={`${styles.navBtn} ${styles.prevBtn}`}
@@ -86,11 +129,17 @@ export const ReaderPlayer: React.FC<ReaderPlayerProps> = ({ lesson, onFinish }) 
           </button>
 
           <button
+            type="button"
             onClick={handleNext}
+            disabled={!hasAnsweredCurrentCheckpoint}
             className={`${styles.navBtn} ${styles.nextBtn}`}
             aria-label={isLastCard ? 'Complete lesson' : 'Next card'}
           >
-            {isLastCard ? 'Complete Lesson ✓' : 'Next →'}
+            {isLastCard
+              ? 'Complete Lesson ✓'
+              : !hasAnsweredCurrentCheckpoint
+              ? 'Select an answer to continue'
+              : 'Next →'}
           </button>
         </div>
 
