@@ -1,17 +1,20 @@
-﻿import React from 'react';
-import { Link, useLocation } from 'react-router';
-import type { ThemeMode } from '../types/lesson';
-import styles from './Header.module.css';
+import React from "react";
+import { Link, useLocation } from "react-router";
+import type { ThemeMode } from "../types/lesson";
+import styles from "./Header.module.css";
 
 interface HeaderProps {
   currentTheme: ThemeMode;
   onThemeChange: (theme: ThemeMode) => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ currentTheme, onThemeChange }) => {
+export const Header: React.FC<HeaderProps> = ({
+  currentTheme,
+  onThemeChange,
+}) => {
   const location = useLocation();
-  const isStudio = location.pathname.startsWith('/studio');
-  const isReaderHome = location.pathname === '/';
+  const isStudio = location.pathname.startsWith("/studio");
+  const isReaderHome = location.pathname === "/";
 
   return (
     <header className={styles.header}>
@@ -23,14 +26,14 @@ export const Header: React.FC<HeaderProps> = ({ currentTheme, onThemeChange }) =
       <nav className={styles.nav}>
         <Link
           to="/"
-          className={`${styles.navLink} ${isReaderHome ? styles.navLinkActive : ''}`}
+          className={`${styles.navLink} ${isReaderHome ? styles.navLinkActive : ""}`}
         >
           Explore Lessons
         </Link>
 
         <Link
           to="/studio"
-          className={`${styles.navLink} ${isStudio ? styles.navLinkActive : ''}`}
+          className={`${styles.navLink} ${isStudio ? styles.navLinkActive : ""}`}
         >
           Creator Studio
         </Link>

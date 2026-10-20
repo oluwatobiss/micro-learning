@@ -1,6 +1,6 @@
-﻿import React from 'react';
-import type { LessonCard as LessonCardType } from '../types/lesson';
-import styles from './LessonCard.module.css';
+import React from "react";
+import type { LessonCard as LessonCardType } from "../types/lesson";
+import styles from "./LessonCard.module.css";
 
 interface LessonCardProps {
   card: LessonCardType;
@@ -9,12 +9,12 @@ interface LessonCardProps {
 export const LessonCard: React.FC<LessonCardProps> = ({ card }) => {
   const getBadgeLabel = (type: string) => {
     switch (type) {
-      case 'comparison':
-        return 'Contrast & Comparison';
-      case 'example':
-        return 'Practical Case';
+      case "comparison":
+        return "Contrast & Comparison";
+      case "example":
+        return "Practical Case";
       default:
-        return 'Core Concept';
+        return "Core Concept";
     }
   };
 
@@ -27,10 +27,10 @@ export const LessonCard: React.FC<LessonCardProps> = ({ card }) => {
       </div>
 
       {card.visualSvg && (
-        <div 
-          className={styles.visualBox} 
-          dangerouslySetInnerHTML={{ __html: card.visualSvg }} 
-          aria-label="Concept diagram" 
+        <div
+          className={styles.visualBox}
+          dangerouslySetInnerHTML={{ __html: card.visualSvg }}
+          aria-label="Concept diagram"
         />
       )}
     </article>

@@ -1,6 +1,6 @@
-﻿export type ThemeMode = 'clean-light' | 'focused-dark' | 'warm-editorial';
+export type ThemeMode = "clean-light" | "focused-dark" | "warm-editorial";
 
-export type CardType = 'narrative' | 'example' | 'comparison' | 'checkpoint';
+export type CardType = "narrative" | "example" | "comparison" | "checkpoint";
 
 export interface QuizOption {
   id: string;
@@ -36,16 +36,11 @@ export interface Lesson {
   cards: LessonCard[];
 }
 
-export type GenerationStageId = 
-  | 'understanding' 
-  | 'planning' 
-  | 'cards' 
-  | 'checks' 
-  | 'quality' 
-  | 'ready';
+export type GenerationStageId =
+  "understanding" | "planning" | "cards" | "checks" | "quality" | "ready";
 
 export interface GenerationStage {
   id: GenerationStageId;
   label: string;
-  status: 'pending' | 'in-progress' | 'complete' | 'failed';
+  status: "pending" | "in-progress" | "complete" | "failed";
 }

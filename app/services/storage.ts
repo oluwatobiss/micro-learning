@@ -1,11 +1,11 @@
-﻿import type { Lesson } from '../types/lesson';
-import { SAMPLE_LESSON } from './sampleLesson';
+import type { Lesson } from "../types/lesson";
+import { SAMPLE_LESSON } from "./sampleLesson";
 
-const STORAGE_KEY = 'microlearning_lessons_v1';
+const STORAGE_KEY = "microlearning_lessons_v1";
 
 export const storageService = {
   getLessons(): Lesson[] {
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return [SAMPLE_LESSON];
     }
 
@@ -22,7 +22,10 @@ export const storageService = {
       }
       return parsed;
     } catch (e) {
-      console.warn('Failed to parse localStorage lessons, falling back to sample:', e);
+      console.warn(
+        "Failed to parse localStorage lessons, falling back to sample:",
+        e,
+      );
       return [SAMPLE_LESSON];
     }
   },
@@ -33,7 +36,7 @@ export const storageService = {
   },
 
   saveLesson(lesson: Lesson): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
     const lessons = this.getLessons();
     const existingIndex = lessons.findIndex((l) => l.id === lesson.id);
 
@@ -49,16 +52,19 @@ export const storageService = {
   },
 
   deleteLesson(id: string): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
     const lessons = this.getLessons();
     const filtered = lessons.filter((l) => l.id !== id);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered.length ? filtered : [SAMPLE_LESSON]));
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(filtered.length ? filtered : [SAMPLE_LESSON]),
+    );
   },
 
   resetDefaults(): Lesson[] {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEY, JSON.stringify([SAMPLE_LESSON]));
     }
     return [SAMPLE_LESSON];
-  }
+  },
 };

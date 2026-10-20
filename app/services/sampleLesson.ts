@@ -1,4 +1,4 @@
-﻿import type { Lesson } from '../types/lesson';
+import type { Lesson } from "../types/lesson";
 
 export const SAMPLE_ARTICLE_TEXT = `
 The Architecture of Micro-Learning: Why Coherent Chunking Beats Endless Summaries
@@ -16,64 +16,71 @@ For knowledge creators and authors, the bottleneck has always been the immense f
 `.trim();
 
 export const SAMPLE_LESSON: Lesson = {
-  id: 'micro-learning-architecture',
-  title: 'The Architecture of Micro-Learning: Why Chunking Beats Summaries',
-  author: 'Oluwatobi S.',
-  sourceUrl: 'https://example.com/books/architecture-of-microlearning',
-  sourceSnippet: 'Cognitive science shows that bulleted summaries produce weak retention. True micro-learning is structural transformation.',
+  id: "micro-learning-architecture",
+  title: "The Architecture of Micro-Learning: Why Chunking Beats Summaries",
+  author: "Oluwatobi S.",
+  sourceUrl: "https://example.com/books/architecture-of-microlearning",
+  sourceSnippet:
+    "Cognitive science shows that bulleted summaries produce weak retention. True micro-learning is structural transformation.",
   estimatedMinutes: 3,
-  createdAt: '2026-10-20T00:00:00.000Z',
+  createdAt: "2026-10-20T00:00:00.000Z",
   cards: [
     {
-      id: 'c1',
-      type: 'narrative',
-      title: 'The Modern Retention Dilemma',
-      content: 'Readers are drowning in valuable long-form articles, newsletters, and books. But when pressed for time, people either abandon long texts or turn to generic AI bullet points that produce only an illusion of competence—leaving no lasting neural retention.'
+      id: "c1",
+      type: "narrative",
+      title: "The Modern Retention Dilemma",
+      content:
+        "Readers are drowning in valuable long-form articles, newsletters, and books. But when pressed for time, people either abandon long texts or turn to generic AI bullet points that produce only an illusion of competence—leaving no lasting neural retention.",
     },
     {
-      id: 'c2',
-      type: 'comparison',
-      title: 'Summarization vs. Structural Transformation',
-      content: 'Generic summaries strip away the logical bridges connecting premise to conclusion. Micro-learning does not summarize; it transforms an argument into sequential narrative building blocks where each card establishes one clear layer of understanding.'
+      id: "c2",
+      type: "comparison",
+      title: "Summarization vs. Structural Transformation",
+      content:
+        "Generic summaries strip away the logical bridges connecting premise to conclusion. Micro-learning does not summarize; it transforms an argument into sequential narrative building blocks where each card establishes one clear layer of understanding.",
     },
     {
-      id: 'c3',
-      type: 'checkpoint',
-      title: 'Concept Check: Active Understanding',
-      content: 'Test your understanding before advancing to the next concept.',
+      id: "c3",
+      type: "checkpoint",
+      title: "Concept Check: Active Understanding",
+      content: "Test your understanding before advancing to the next concept.",
       checkpoint: {
-        question: 'Why do generic bullet-point summaries often produce weak long-term retention compared to narrative micro-learning?',
+        question:
+          "Why do generic bullet-point summaries often produce weak long-term retention compared to narrative micro-learning?",
         options: [
           {
-            id: 'opt-a',
-            text: 'Because bullet points are always too short to contain any accurate vocabulary.',
-            isCorrect: false
+            id: "opt-a",
+            text: "Because bullet points are always too short to contain any accurate vocabulary.",
+            isCorrect: false,
           },
           {
-            id: 'opt-b',
-            text: 'Because they strip away the logical bridges, evidence, and narrative structure needed to build an enduring mental model.',
-            isCorrect: true
+            id: "opt-b",
+            text: "Because they strip away the logical bridges, evidence, and narrative structure needed to build an enduring mental model.",
+            isCorrect: true,
           },
           {
-            id: 'opt-c',
-            text: 'Because human memory cannot process information unless it is delivered via vertical video.',
-            isCorrect: false
-          }
+            id: "opt-c",
+            text: "Because human memory cannot process information unless it is delivered via vertical video.",
+            isCorrect: false,
+          },
         ],
-        explanation: 'According to cognitive science, bullet lists trigger passive recognition rather than active mental reconstruction. Coherent narrative cards preserve the causal connections and evidence that anchor concepts in long-term memory.'
-      }
+        explanation:
+          "According to cognitive science, bullet lists trigger passive recognition rather than active mental reconstruction. Coherent narrative cards preserve the causal connections and evidence that anchor concepts in long-term memory.",
+      },
     },
     {
-      id: 'c4',
-      type: 'example',
-      title: 'Active Verification via Retrieval Practice',
-      content: 'Stopping at intentional checkpoints triggers active retrieval practice. Answering a question grounded in the source text forces the brain to synthesize the concept, dramatically improving recall and immediate comprehension.'
+      id: "c4",
+      type: "example",
+      title: "Active Verification via Retrieval Practice",
+      content:
+        "Stopping at intentional checkpoints triggers active retrieval practice. Answering a question grounded in the source text forces the brain to synthesize the concept, dramatically improving recall and immediate comprehension.",
     },
     {
-      id: 'c5',
-      type: 'narrative',
-      title: 'The Creator Advantage: Repurposing Without Dilution',
-      content: 'Authors invest weeks producing deep knowledge. Instead of manually rebuilding slides or settling for shallow AI summaries, adaptive extraction lets creators generate credible, interactive lessons in minutes while retaining 100% editorial authority.'
-    }
-  ]
+      id: "c5",
+      type: "narrative",
+      title: "The Creator Advantage: Repurposing Without Dilution",
+      content:
+        "Authors invest weeks producing deep knowledge. Instead of manually rebuilding slides or settling for shallow AI summaries, adaptive extraction lets creators generate credible, interactive lessons in minutes while retaining 100% editorial authority.",
+    },
+  ],
 };

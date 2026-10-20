@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import type { QuizCheckpoint } from '../types/lesson';
-import styles from './CheckpointCard.module.css';
+import React, { useState } from "react";
+import type { QuizCheckpoint } from "../types/lesson";
+import styles from "./CheckpointCard.module.css";
 
 interface CheckpointCardProps {
   checkpoint: QuizCheckpoint;
@@ -13,7 +13,9 @@ export const CheckpointCard: React.FC<CheckpointCardProps> = ({
   onAnswerSelected,
   selectedOptionId: initialSelectedId,
 }) => {
-  const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId || null);
+  const [selectedId, setSelectedId] = useState<string | null>(
+    initialSelectedId || null,
+  );
 
   const handleSelect = (optionId: string, isCorrect: boolean) => {
     if (selectedId) return; // already answered
@@ -26,7 +28,10 @@ export const CheckpointCard: React.FC<CheckpointCardProps> = ({
   const hasAnswered = selectedId !== null;
 
   return (
-    <article className={styles.checkpointContainer} aria-label="Comprehension Checkpoint">
+    <article
+      className={styles.checkpointContainer}
+      aria-label="Comprehension Checkpoint"
+    >
       <div>
         <div className={styles.badge}>
           <span>💡</span> Active Comprehension Check
@@ -37,7 +42,7 @@ export const CheckpointCard: React.FC<CheckpointCardProps> = ({
         <div className={styles.optionsList} role="radiogroup">
           {checkpoint.options.map((option, index) => {
             const isSelected = selectedId === option.id;
-            const letters = ['A', 'B', 'C', 'D'];
+            const letters = ["A", "B", "C", "D"];
             const letter = letters[index] || `${index + 1}`;
 
             let buttonClass = styles.optionBtn;
@@ -62,7 +67,13 @@ export const CheckpointCard: React.FC<CheckpointCardProps> = ({
                 aria-checked={isSelected}
               >
                 <div className={styles.optionIndicator}>
-                  {hasAnswered ? (option.isCorrect ? '✓' : isSelected ? '✕' : letter) : letter}
+                  {hasAnswered
+                    ? option.isCorrect
+                      ? "✓"
+                      : isSelected
+                        ? "✕"
+                        : letter
+                    : letter}
                 </div>
                 <span>{option.text}</span>
               </button>
