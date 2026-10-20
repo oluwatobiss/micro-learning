@@ -1,0 +1,40 @@
+/* Instructional Diagram Styling */
+.diagramWrapper {
+  margin: 1.5rem 0;
+  padding: 1.25rem 1rem;
+  background-color: var(--bg-surface-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.desktopSvg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 740px;
+}
+
+.mobileSvg {
+  display: none;
+  width: 100%;
+  max-width: 360px;
+  height: auto;
+  margin: 0 auto;
+}
+
+@media (max-width: 640px) {
+  .diagramWrapper {
+    padding: 1rem 0.5rem;
+  }
+  .desktopSvg {
+    display: none;
+  }
+  .mobileSvg {
+    display: block;
+  }
+}

@@ -72,6 +72,43 @@ Activity mode: not established
 
 ## Revisions
 
+### Final Reader Quality Pass: Responsive Navigation, Encoding, Illustrations & Accessibility
+
+- **Date:** October 20, 2026
+- **Status:** Verified & Complete
+- **Scope & Implementation:**
+  1. **Text Encoding & Mojibake Elimination:**
+     - Traced root cause of `â€”` mojibake: UTF-8 em dash `—` (bytes `0xE2 0x80 0x94`) was previously interpreted/saved as Windows-1252.
+     - Cleaned all 6 occurrences in `app/services/sampleLesson.ts` back to genuine UTF-8 em dash `—`.
+     - Bumped `SAMPLE_LESSON.version` to 2 and storage key to `microlearning_lessons_v3`, adding auto-synchronization so cached seed lessons in `localStorage` seamlessly upgrade without manual cache wipes.
+     - Added automated regression check in `tests_reader.mjs` asserting zero occurrences of mojibake patterns (`â€”`, `â€™`, `â€œ`, `â€`, `Ã`) across all lessons and cards.
+  2. **Deliberate Mobile Reader Navigation:**
+     - Refactored `ReaderPlayer.tsx` and `ReaderPlayer.module.css` to introduce an intentional mobile bottom navigation bar (`position: fixed; bottom: 0;`).
+     - Added safe-area padding (`calc(0.75rem + env(safe-area-inset-bottom))`) and reserved bottom clearance on `.playerWrapper` (`padding-bottom: calc(5.5rem + env(safe-area-inset-bottom))`) so text, code blocks, diagrams, and checkpoint explanations are never obscured.
+     - Retained the clean, in-flow inline navigation on desktop (`> 640px`).
+     - Preserved accessible minimum 48px touch targets and distinct disabled states across all devices.
+  3. **Simplified Source Attribution:**
+     - Removed distracting, repeated "Original Source ↗" links from every reading card in `ReaderPlayer.tsx`.
+     - Preserved the visible source attribution link exclusively on the dedicated `LessonCompletion` screen alongside author metadata with safe `target="_blank" rel="noopener noreferrer"` attributes.
+  4. **Responsive & Legible Concept Diagram:**
+     - Refactored `InstructionalDiagram.tsx` and created `InstructionalDiagram.module.css`.
+     - Desktop retains a horizontal 4-step sequence (`740x160` viewBox) with corrected technical terminology (User Action -> setState Called -> React Re-renders -> DOM Sync).
+     - Mobile introduces a bespoke vertical 4-step card stack (`340x430` viewBox) with downward connector arrows, large legible typography (14px title / 12.5px description), high contrast, and zero horizontal overflow.
+  5. **WCAG 2.2 Level AA Contrast Audit & Optimization:**
+     - Programmatically audited all color combinations across Clean Light, Focused Dark, and Warm Editorial.
+     - Elevated Focused Dark `text-muted` from `#64748b` (3.73:1) to `#94a3b8` (6.92:1, solid AA/AAA).
+     - Adjusted Clean Light `accent-primary` to `#0369a1` (5.93:1) and `feedback-success` to `#047857` (5.48:1).
+     - Adjusted Warm Editorial `text-muted` to `#6b5e53` (6.27:1) and `text-secondary` to `#4a3f36` (10.22:1).
+     - 100% of all normal text combinations across all 3 themes now achieve >= 4.5:1 contrast, with all large text and graphical components meeting >= 3.0:1.
+  6. **Code Blocks & Focus Indicators:**
+     - Added `:focus-visible` styling to copy button in `MarkdownContent.module.css`.
+     - Verified code block containment with internal horizontal scrolling.
+  7. **Comprehensive Verification:**
+     - `npm run typecheck`: 0 errors.
+     - `npm test`: 5/5 passing tests in `tests_reader.mjs`.
+     - `npm run build`: successful production build.
+
+
 ### Checkpoint 1 Refinement: Reader UX, Persistence, Content Rendering & Environment Audit
 
 - **Date:** October 20, 2026

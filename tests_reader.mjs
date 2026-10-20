@@ -200,3 +200,44 @@ test("4. Multi-lesson Independence", () => {
     "Lessons must not share answer records",
   );
 });
+
+test("5. Encoding Integrity & Mojibake Prevention", () => {
+  const mojibakePatterns = ["â€”", "â€™", "â€œ", "â€", "Ã"];
+
+  for (const lesson of DEFAULT_LESSONS) {
+    const textsToCheck = [
+      lesson.title,
+      lesson.author,
+      lesson.sourceSnippet,
+      ...(lesson.keyTakeaways || []),
+    ];
+
+    for (const card of lesson.cards) {
+      textsToCheck.push(card.title, card.content);
+      if (card.checkpoint) {
+        textsToCheck.push(card.checkpoint.question, card.checkpoint.explanation);
+        for (const opt of card.checkpoint.options) {
+          textsToCheck.push(opt.text);
+        }
+      }
+    }
+
+    for (const text of textsToCheck) {
+      for (const pattern of mojibakePatterns) {
+        assert.ok(
+          !text.includes(pattern),
+          `Found mojibake pattern "${pattern}" in text: "${text.substring(0, 40)}..."`
+        );
+      }
+    }
+  }
+
+  // Explicit positive check for em-dash in retention dilemma card
+  const sampleLesson = DEFAULT_LESSONS.find((l) => l.id === "micro-learning-architecture");
+  assert.ok(sampleLesson, "Must find micro-learning-architecture lesson");
+  const card1 = sampleLesson.cards[0];
+  assert.ok(
+    card1.content.includes("—leaving no lasting neural retention"),
+    "Card 1 must contain valid em dash '—'"
+  );
+});

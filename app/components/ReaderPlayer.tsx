@@ -218,8 +218,8 @@ export const ReaderPlayer: React.FC<ReaderPlayerProps> = ({
         <LessonCard card={currentCard} />
       )}
 
-      {/* Visible Bottom Controls */}
-      <div className={styles.controlsRow}>
+      {/* Visible Bottom Controls (Inline Desktop, Compact Sticky/Fixed on Mobile) */}
+      <nav className={styles.controlsRow} aria-label="Card navigation">
         <div className={styles.btnGroup}>
           <button
             type="button"
@@ -253,19 +253,7 @@ export const ReaderPlayer: React.FC<ReaderPlayerProps> = ({
                 : "Next →"}
           </button>
         </div>
-
-        {lesson.sourceUrl && (
-          <a
-            href={lesson.sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.sourceLink}
-            aria-label={`View original source by ${lesson.author} in a new tab`}
-          >
-            Original Source ↗
-          </a>
-        )}
-      </div>
+      </nav>
     </div>
   );
 };
