@@ -131,14 +131,20 @@ test("2. Reader State Persistence - Lifecycle & Graceful Degrade", () => {
     "Out-of-bounds index must fall back gracefully to 0",
   );
 
-  // Corrupted non-JSON storage
-  localStorage.setItem("microlearning_reader_progress_v1", "invalid-json{{[");
-  saved = progressService.getProgress(lessonId, version, totalCards);
-  assert.equal(
-    saved,
-    null,
-    "Malformed JSON in storage must safely return null without throwing",
-  );
+  // Corrupted non-JSON storage (silence intentional warning during negative test)
+  const origWarn = console.warn;
+  console.warn = () => {};
+  try {
+    localStorage.setItem("microlearning_reader_progress_v1", "invalid-json{{[");
+    saved = progressService.getProgress(lessonId, version, totalCards);
+    assert.equal(
+      saved,
+      null,
+      "Malformed JSON in storage must safely return null without throwing",
+    );
+  } finally {
+    console.warn = origWarn;
+  }
 
   // Version mismatch
   localStorage.setItem(

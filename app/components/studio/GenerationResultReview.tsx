@@ -271,7 +271,7 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
       <section className={styles.sectionCard} aria-labelledby="quality-title">
         <div className={styles.sectionHeader}>
           <h2 id="quality-title" className={styles.sectionTitle}>
-            <span>Stage 5 — Deterministic Quality Audit</span>
+            <span>Deterministic Quality Audit</span>
           </h2>
           <span className={styles.auditScore}>
             Passed {passedCount} of {totalChecks} Checks

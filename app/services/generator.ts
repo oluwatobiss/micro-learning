@@ -104,9 +104,10 @@ export function understandSource(input: SourceInputData): SourceAnalysis {
     ) {
       seenTerms.add(rawTerm.toLowerCase());
       const termSentence = findSentenceWithTerm(text, rawTerm);
+      const cleanedDef = cleanDefinition(rawTerm, termSentence);
       keyTerms.push({
         term: rawTerm,
-        definition: termSentence,
+        definition: cleanedDef,
       });
       if (keyTerms.length >= 6) break;
     }
@@ -172,7 +173,7 @@ export function understandSource(input: SourceInputData): SourceAnalysis {
   const takeaways: string[] = [
     `Core Thesis: ${thesis.slice(0, 160)}${thesis.length > 160 ? "..." : ""}`,
     keyTerms[0]
-      ? `${keyTerms[0].term}: ${keyTerms[0].definition}`
+      ? `${keyTerms[0].term}: ${cleanDefinition(keyTerms[0].term, keyTerms[0].definition)}`
       : "Disciplined state isolation preserves data integrity.",
     processSteps.length >= 2
       ? `Multi-stage execution requires strict rollback buffers on failure.`
@@ -195,6 +196,17 @@ export function understandSource(input: SourceInputData): SourceAnalysis {
     ],
     totalWordCount: countWords(text),
   };
+}
+
+function cleanDefinition(term: string, definition: string): string {
+  const t = term.toLowerCase().trim();
+  const d = definition.trim();
+  if (d.toLowerCase().startsWith(t)) {
+    const rest = d.slice(t.length).trim();
+    const cleaned = rest.replace(/^[:–—\-]\s*/, "").trim();
+    return cleaned || definition;
+  }
+  return definition;
 }
 
 function findSentenceWithTerm(text: string, term: string): string {

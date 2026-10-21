@@ -199,6 +199,12 @@ test("5. Stage 1 — Understanding Source Analysis", () => {
     "Must extract sequential process steps",
   );
   assert.ok(analysis.takeaways.length >= 2, "Must extract key takeaways");
+  for (const takeaway of analysis.takeaways) {
+    assert.ok(
+      !/^([^:]+):\s*\1[:\s]/i.test(takeaway),
+      `Takeaway must not contain duplicate term prefix: "${takeaway}"`,
+    );
+  }
   assert.ok(
     analysis.totalWordCount >= 200,
     "Word count must be tracked accurately",
