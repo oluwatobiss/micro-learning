@@ -1,5 +1,5 @@
 import type { Lesson } from "../types/lesson";
-import { DEFAULT_LESSONS, SAMPLE_LESSON } from "./sampleLesson";
+import { DEFAULT_LESSONS, SAMPLE_LESSON } from "./sampleLesson.ts";
 
 const STORAGE_KEY = "microlearning_lessons_v3";
 
@@ -26,11 +26,15 @@ export const storageService = {
       const combined = [...parsed];
 
       for (const defaultLesson of DEFAULT_LESSONS) {
-        const existingIdx = combined.findIndex((l) => l.id === defaultLesson.id);
+        const existingIdx = combined.findIndex(
+          (l) => l.id === defaultLesson.id,
+        );
         if (existingIdx === -1) {
           combined.push(defaultLesson);
           hasChanges = true;
-        } else if ((combined[existingIdx].version || 1) < defaultLesson.version) {
+        } else if (
+          (combined[existingIdx].version || 1) < defaultLesson.version
+        ) {
           combined[existingIdx] = defaultLesson;
           hasChanges = true;
         }

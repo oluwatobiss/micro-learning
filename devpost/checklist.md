@@ -246,3 +246,88 @@ Completed and verified the remediation of Slice 3 based on visual review and wor
    - `npm run typecheck` (`tsc --noEmit`): **0 errors**.
    - `npm run build`: Production build passes cleanly for both SPA and SSR targets.
    - Browser subagent verified full end-to-end journey on `http://127.0.0.1:5173/studio`.
+
+## Slice 4 Implementation Plan: Card Deck Editor
+
+### 1. Architecture and Component Design
+
+- **New Route:** `app/routes/editor.$id.tsx` registered as `route("editor/:id", "routes/editor.$id.tsx")` in `app/routes.ts`.
+- **Integrated Studio Transition:** Update `GenerationResultReview` and `studio.tsx` to support transitioning directly into the editor with the complete `Slice4HandoffPayload` (preserving sourceAnalysis and qualityReport provenance), or navigating to `/editor/:id`.
+- **Core Editor Component:** `app/components/editor/CardDeckEditor.tsx` and `CardDeckEditor.module.css`:
+  - **Lesson Metadata Bar:** Title, author, read time (auto-recalculated from card word counts), dirty draft status ("Unsaved changes" vs "All changes saved"), action bar with Save to Storage, Export JSON, and "Publish / View as Reader".
+  - **Deck Outline / Navigation Rail:** Responsive list of cards with position indicator (#1, #2...), title, type badge ("Narrative", "Code Example", "Comparison", "Interactive Diagram", "Checkpoint"), lock icon indicator, and accessible Move Up / Move Down buttons. Includes "+ Add Card" button.
+  - **Card Editing Pane:**
+    - Title input with inline validation.
+    - Card Type selector with schema-backed options ("narrative", "example", "comparison", "checkpoint").
+    - Card Lock Toggle ("Lock Card" / "Unlock Card") preventing accidental edits to approved content.
+    - Content Editor: Markdown textarea with live word count, character count, and formatting helper hints.
+    - Checkpoint Editor (conditional for "checkpoint" type): Question input, structured options manager (2–4 options with stable IDs, text input, and designated radio for the single correct answer), and educational explanation input.
+    - Instructional Media Inspector (conditional if card has visualMedia): live preview and structured step inspection.
+    - Card Actions Toolbar: "Move Up", "Move Down", "Duplicate Card", "Delete Card" (with confirmation or undo recovery).
+  - **Live Reader Preview:**
+    - Desktop: Split/side-by-side preview panel rendering the exact card using Reader components (`LessonCard`, `CheckpointCard`, `InstructionalDiagram`, `MarkdownContent`).
+    - Mobile: Segmented toggle ("Edit" vs "Live Preview") with zero nested horizontal overflow.
+  - **Draft Persistence & Recovery:**
+    - Distinct `microlearning_editor_draft_${lesson.id}` in localStorage so in-progress edits survive reloads without corrupting saved lessons in `storageService`.
+    - Prompts creator to restore draft if uncommitted edits exist.
+    - "Publish / View as Reader" commits the draft to `storageService.saveLesson`, cleans up temporary draft, and navigates directly to `/lessons/:id`.
+  - **Export Utility:**
+    - One-click "Export JSON" downloading formatted, validated `${lesson.id}.json`.
+  - **Validation Engine:**
+    - Deck-level and field-level validation: non-empty titles, valid card counts, checkpoint integrity (>= 2 options, exactly 1 correct answer, non-empty explanation), media spec integrity via `validateMediaSpec`.
+    - Distinguishes blocking errors from advisory warnings.
+
+### 2. Acceptance Criteria
+
+1. **Loading & Handoff:** Loads `Lesson` from Slice 3 handoff or existing stored lesson by ID without losing metadata or provenance.
+2. **Card CRUD:** Supports adding new cards, editing content, duplicating cards with unique IDs, and deleting cards with undo/confirmation.
+3. **Card Reordering:** Accessible Move Up/Down controls change deck order while preserving stable card IDs.
+4. **Checkpoint Authoring:** Enforces >= 2 options, exactly one correct option, and non-empty explanation.
+5. **Card Locking:** Can toggle lock on individual cards to protect approved content.
+6. **Draft & Save Lifecycle:** Tracks dirty changes accurately; saving commits to `storageService`; export generates valid JSON; publish saves and launches Reader.
+7. **Reader Preview:** Reuses authentic Reader components for live Markdown, code block copy, and diagrams.
+8. **Accessibility & Responsiveness:** Works on desktop and mobile viewports across all 3 themes (Clean Light, Focused Dark, Warm Editorial) with complete keyboard accessibility.
+9. **Verification:** Automated tests for card operations, validation, state persistence, and Slice 4 handoff contract in `tests_slice4.mjs`.
+
+### Slice 4 Delivery: Card Deck Editor Completed & Verified
+
+Completed and verified the implementation of **Slice 4: Card Deck Editor**:
+
+1. **Card Deck Editor Interface (`app/components/editor/CardDeckEditor.tsx` & `.module.css`):**
+   - **3-Pane Desktop Workspace:**
+     - Left: Deck outline navigation rail with position indicators (#1, #2...), titles, type badges, lock status indicators, accessible Move Up (▲) / Move Down (▼) buttons, and "+ Add New Card".
+     - Center: Primary card editing pane with Card Title input, Card Type selector, Card Lock toggle (`isLocked`), Markdown content textarea with live word counter, structured Checkpoint editor (for question, options A–D, correct answer radio, and explanation), and bottom card actions (Duplicate, Delete with undo recovery, Move Up/Down).
+     - Right: Live Reader Preview frame rendering the exact card using real Reader components (`LessonCard`, `CheckpointCard`, `InstructionalDiagram`, `MarkdownContent`).
+   - **Mobile-First Responsive Layout:**
+     - Segmented navigation tabs (`📋 Cards`, `✏️ Edit Card`, `👁️ Live Preview`).
+     - Comfortable touch targets (>= 44px/48px) and zero horizontal overflow.
+   - **Full Theme Fidelity:**
+     - Supports Clean Light, Focused Dark, and Warm Editorial seamlessly using CSS design tokens.
+
+2. **Draft State, Persistence & Isolation (`app/services/draft.ts`):**
+   - Independent transient draft storage in `localStorage` under `microlearning_editor_draft_${lesson.id}` so in-progress edits survive reloads without corrupting saved lessons in `storageService`.
+   - Accurate dirty state tracking (`● Unsaved changes` vs `✓ Saved`).
+   - Browser `beforeunload` warning when unsaved changes exist.
+   - "Save Lesson" commits draft to `storageService.saveLesson` and clears transient draft.
+   - "Publish / View as Reader →" validates the deck, commits to storage, and navigates directly to the live reader at `/lessons/:id`.
+   - "Export JSON" downloads formatted, validated `${lesson.id}.json`.
+
+3. **Deck Validation Engine (`app/utils/editorValidation.ts`):**
+   - Validates lesson title, attribution, card count boundaries, card title/content integrity.
+   - Checkpoint contract enforcement: >= 2 options, exactly one designated correct answer, non-empty explanation.
+   - Instructional media spec validation via `validateMediaSpec`.
+   - Dynamic estimated read time recalculation (~180 words/min).
+   - Distinguishes blocking errors from advisory warnings.
+
+4. **Routing & Workflow Handoff:**
+   - Dedicated route `/editor/:id` (`app/routes/editor.$id.tsx`) registered in `app/routes.ts`.
+   - Integrated transition from Creator Studio: `GenerationResultReview` features "Customize in Card Deck Editor ✏️" and "Open in Card Deck Editor →" buttons.
+   - Reader Player integration: "✏️ Edit Deck" link on `/lessons/:id` allows creators to jump directly into editing.
+   - Preserves Slice 3 handoff contract (`Slice4HandoffPayload`) delivering lesson, source analysis, and quality audit report.
+
+5. **Automated Verification:**
+   - Authored `tests_slice4.mjs` covering card CRUD, reordering, checkpoint strict contract, locking, read time recalculation, draft isolation, JSON export, and Slice 4 handoff ingestion.
+   - Full automated test suite (`npm test`): **26/26 tests passed** (6 Reader tests + 12 Slice 3 tests + 8 Slice 4 tests).
+   - Typecheck (`npm run typecheck`): **0 errors**.
+   - Production build (`npm run build`): **Built cleanly** for client SPA and SSR.
+   - Browser subagent verified full end-to-end workflow: 3-pane layout, editing title, adding card, reordering, saving, theme switching, mobile responsiveness, and publishing to reader.

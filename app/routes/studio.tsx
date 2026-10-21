@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import type { MetaFunction } from "react-router";
+import { useNavigate, type MetaFunction } from "react-router";
 import type {
   SourceInputData,
   GenerationProgressState,
@@ -9,6 +9,7 @@ import { generateLesson } from "../services/generator";
 import { SourceInputForm } from "../components/studio/SourceInputForm";
 import { GenerationProgressOverlay } from "../components/studio/GenerationProgressOverlay";
 import { GenerationResultReview } from "../components/studio/GenerationResultReview";
+import { CardDeckEditor } from "../components/editor/CardDeckEditor";
 import styles from "./studio.module.css";
 
 export const meta: MetaFunction = () => {
@@ -22,7 +23,7 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-type StudioViewMode = "input" | "generating" | "review";
+type StudioViewMode = "input" | "generating" | "review" | "editor";
 
 const INITIAL_PROGRESS: GenerationProgressState = {
   stages: {
@@ -72,6 +73,7 @@ const INITIAL_PROGRESS: GenerationProgressState = {
 };
 
 export default function StudioRoute() {
+  const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<StudioViewMode>("input");
   const [lastInput, setLastInput] = useState<SourceInputData | null>(null);
   const [progress, setProgress] =
@@ -154,6 +156,15 @@ export default function StudioRoute() {
         <GenerationResultReview
           result={result}
           onCreateAnother={handleCreateAnother}
+          onOpenEditor={() => setViewMode("editor")}
+        />
+      )}
+
+      {viewMode === "editor" && result && (
+        <CardDeckEditor
+          initialPayload={result}
+          onBack={() => setViewMode("review")}
+          onPublish={(published) => navigate(`/lessons/${published.id}`)}
         />
       )}
     </div>

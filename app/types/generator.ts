@@ -108,3 +108,10 @@ export interface GenerationResult {
   generatedAt: string;
   provider: "grounded-adaptive-engine" | "gemini-ai";
 }
+
+export interface Slice4HandoffPayload {
+  lesson: Lesson;
+  sourceAnalysis?: SourceAnalysis;
+  qualityReport?: QualityAuditReport;
+  provider?: "grounded-adaptive-engine" | "gemini-ai" | "manual-authoring";
+}

@@ -59,5 +59,40 @@ export default function LessonPlayerRoute() {
     );
   }
 
-  return <ReaderPlayer lesson={lesson} />;
+  return (
+    <div>
+      <div
+        style={{
+          maxWidth: "760px",
+          margin: "0 auto",
+          padding: "0.75rem 1rem 0 1rem",
+          display: "flex",
+          justifyContent: "flex-end",
+        }}
+      >
+        <Link
+          to={`/editor/${lesson.id}`}
+          style={{
+            fontSize: "0.8rem",
+            fontWeight: 600,
+            color: "var(--text-secondary)",
+            textDecoration: "none",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.35rem",
+            padding: "0.35rem 0.75rem",
+            borderRadius: "var(--radius-md)",
+            border: "1px solid var(--border-color)",
+            backgroundColor: "var(--bg-surface)",
+            transition: "all var(--transition-fast)",
+          }}
+          title="Customize this lesson in Card Deck Editor"
+          id="reader-edit-deck-link"
+        >
+          <span>✏️ Edit Deck</span>
+        </Link>
+      </div>
+      <ReaderPlayer lesson={lesson} />
+    </div>
+  );
 }

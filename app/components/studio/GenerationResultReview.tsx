@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import type { GenerationResult } from "../../types/generator";
 import { storageService } from "../../services/storage";
 import { MarkdownContent } from "../MarkdownContent";
@@ -8,6 +8,7 @@ import styles from "./GenerationResultReview.module.css";
 interface GenerationResultReviewProps {
   result: GenerationResult;
   onCreateAnother: () => void;
+  onOpenEditor?: () => void;
 }
 
 function stripMarkdownPreview(text: string, maxLength = 160): string {
@@ -26,7 +27,9 @@ function stripMarkdownPreview(text: string, maxLength = 160): string {
 export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
   result,
   onCreateAnother,
+  onOpenEditor,
 }) => {
+  const navigate = useNavigate();
   const { lesson, qualityReport, sourceAnalysis } = result;
   const [isSaved, setIsSaved] = useState(false);
   const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
@@ -40,13 +43,24 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
   };
 
   const handleDownloadJson = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(lesson, null, 2));
+    const dataStr =
+      "data:text/json;charset=utf-8," +
+      encodeURIComponent(JSON.stringify(lesson, null, 2));
     const downloadAnchor = document.createElement("a");
     downloadAnchor.setAttribute("href", dataStr);
     downloadAnchor.setAttribute("download", `${lesson.id}.json`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
+  };
+
+  const handleOpenEditor = () => {
+    storageService.saveLesson(lesson);
+    if (onOpenEditor) {
+      onOpenEditor();
+    } else {
+      navigate(`/editor/${lesson.id}`);
+    }
   };
 
   const getCardTypeLabel = (type: string, hasVisual?: boolean) => {
@@ -79,9 +93,12 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
               </svg>
               <span>Lesson generated successfully</span>
             </div>
-            <h1 id="result-title" className={styles.lessonTitle}>{lesson.title}</h1>
+            <h1 id="result-title" className={styles.lessonTitle}>
+              {lesson.title}
+            </h1>
             <p className={styles.attribution}>
-              Synthesized from original material by <strong>{lesson.author}</strong>
+              Synthesized from original material by{" "}
+              <strong>{lesson.author}</strong>
               {lesson.sourceUrl && (
                 <>
                   {" • "}
@@ -117,26 +134,59 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
         <div className={styles.statsGrid}>
           <div className={styles.statItem}>
             <span className={styles.statLabel}>Card Count</span>
-            <span className={styles.statValue}>{lesson.cards.length} Cards</span>
+            <span className={styles.statValue}>
+              {lesson.cards.length} Cards
+            </span>
           </div>
           <div className={styles.statItem}>
             <span className={styles.statLabel}>Est. Read Time</span>
-            <span className={styles.statValue}>{lesson.estimatedMinutes} min</span>
+            <span className={styles.statValue}>
+              {lesson.estimatedMinutes} min
+            </span>
           </div>
           <div className={styles.statItem}>
             <span className={styles.statLabel}>Source Words</span>
-            <span className={styles.statValue}>{sourceAnalysis.totalWordCount.toLocaleString()}</span>
+            <span className={styles.statValue}>
+              {sourceAnalysis.totalWordCount.toLocaleString()}
+            </span>
           </div>
           <div className={styles.statItem}>
             <span className={styles.statLabel}>Quality Status</span>
-            <span className={styles.statValue} style={{ color: "var(--feedback-success)" }}>
+            <span
+              className={styles.statValue}
+              style={{ color: "var(--feedback-success)" }}
+            >
               {passedCount}/{totalChecks} Checks
             </span>
-            <span className={styles.statSubtext}>Deterministic verification</span>
+            <span className={styles.statSubtext}>
+              Deterministic verification
+            </span>
           </div>
         </div>
 
         <div className={styles.actionRow}>
+          <button
+            type="button"
+            onClick={handleOpenEditor}
+            className={styles.primaryAction}
+            id="open-editor-btn"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+            </svg>
+            <span>Customize in Card Deck Editor ✏️</span>
+          </button>
           <button
             type="button"
             onClick={handleSaveToReader}
@@ -156,7 +206,9 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
             >
               <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
             </svg>
-            <span>{isSaved ? "Saved to Reader ✓" : "Save Lesson to Reader"}</span>
+            <span>
+              {isSaved ? "Saved to Reader ✓" : "Save Lesson to Reader"}
+            </span>
           </button>
           {isSaved && (
             <Link
@@ -246,7 +298,11 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
             </div>
           ))}
           {qualityReport.warnings.map((warn, idx) => (
-            <div key={`warn-${idx}`} className={styles.auditItem} style={{ color: "var(--feedback-warning)" }}>
+            <div
+              key={`warn-${idx}`}
+              className={styles.auditItem}
+              style={{ color: "var(--feedback-warning)" }}
+            >
               <svg
                 width="16"
                 height="16"
@@ -267,7 +323,11 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
             </div>
           ))}
           {qualityReport.errors.map((err, idx) => (
-            <div key={`err-${idx}`} className={styles.auditItem} style={{ color: "var(--feedback-danger)" }}>
+            <div
+              key={`err-${idx}`}
+              className={styles.auditItem}
+              style={{ color: "var(--feedback-danger)" }}
+            >
               <svg
                 width="16"
                 height="16"
@@ -292,7 +352,9 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
       <section className={styles.sectionCard} aria-labelledby="deck-title">
         <div className={styles.sectionHeader}>
           <h2 id="deck-title" className={styles.sectionTitle}>
-            <span>Generated Lesson Card Deck ({lesson.cards.length} Cards)</span>
+            <span>
+              Generated Lesson Card Deck ({lesson.cards.length} Cards)
+            </span>
           </h2>
         </div>
 
@@ -306,7 +368,9 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
                   {getCardTypeLabel(c.type, Boolean(c.visualMedia))}
                 </span>
                 {idx < lesson.cards.length - 1 && (
-                  <span className={styles.progressionArrow} aria-hidden="true">→</span>
+                  <span className={styles.progressionArrow} aria-hidden="true">
+                    →
+                  </span>
                 )}
               </React.Fragment>
             ))}
@@ -316,22 +380,45 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
         <div className={styles.cardList}>
           {lesson.cards.map((card, idx) => {
             const isExpanded = expandedCardId === card.id;
-            const badgeLabel = getCardTypeLabel(card.type, Boolean(card.visualMedia));
+            const badgeLabel = getCardTypeLabel(
+              card.type,
+              Boolean(card.visualMedia),
+            );
 
             return (
               <div key={card.id} className={styles.deckCard}>
                 <div className={styles.deckCardHeader}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <span style={{ fontWeight: 700, color: "var(--text-muted)", fontSize: "0.875rem" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontWeight: 700,
+                        color: "var(--text-muted)",
+                        fontSize: "0.875rem",
+                      }}
+                    >
                       #{idx + 1}
                     </span>
                     <span className={styles.deckCardTitle}>{card.title}</span>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                    }}
+                  >
                     <span className={styles.cardTypeBadge}>{badgeLabel}</span>
                     <button
                       type="button"
-                      onClick={() => setExpandedCardId(isExpanded ? null : card.id)}
+                      onClick={() =>
+                        setExpandedCardId(isExpanded ? null : card.id)
+                      }
                       className={styles.inspectBtn}
                       aria-expanded={isExpanded}
                     >
@@ -404,12 +491,16 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
                                 <circle cx="8" cy="8" r="6" />
                               </svg>
                             )}
-                            <span>{opt.text} {opt.isCorrect ? "(Correct)" : ""}</span>
+                            <span>
+                              {opt.text} {opt.isCorrect ? "(Correct)" : ""}
+                            </span>
                           </div>
                         ))}
                         <div className={styles.checkpointExplanation}>
                           <strong>Explanation:</strong>
-                          <MarkdownContent content={card.checkpoint.explanation} />
+                          <MarkdownContent
+                            content={card.checkpoint.explanation}
+                          />
                         </div>
                       </div>
                     )}
@@ -423,14 +514,25 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
 
       {/* Completion Takeaways */}
       {lesson.keyTakeaways && lesson.keyTakeaways.length > 0 && (
-        <section className={styles.sectionCard} aria-labelledby="takeaways-title">
-          <h2 id="takeaways-title" className={styles.sectionTitle} style={{ marginBottom: "1rem" }}>
-            <span>Lesson Completion Takeaways ({lesson.keyTakeaways.length})</span>
+        <section
+          className={styles.sectionCard}
+          aria-labelledby="takeaways-title"
+        >
+          <h2
+            id="takeaways-title"
+            className={styles.sectionTitle}
+            style={{ marginBottom: "1rem" }}
+          >
+            <span>
+              Lesson Completion Takeaways ({lesson.keyTakeaways.length})
+            </span>
           </h2>
           <ul className={styles.takeawaysList}>
             {lesson.keyTakeaways.map((takeaway, idx) => (
               <li key={idx} className={styles.takeawayItem}>
-                <span className={styles.takeawayBullet} aria-hidden="true">•</span>
+                <span className={styles.takeawayBullet} aria-hidden="true">
+                  •
+                </span>
                 <span>{takeaway}</span>
               </li>
             ))}
@@ -447,11 +549,13 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
           </h2>
         </div>
         <p className={styles.handoffText}>
-          Slice 3 successfully produced a fully structured, validated, and grounded <code>Lesson</code> object.
-          The downstream Slice 4 Deck Editor consumes this typed payload without needing knowledge of generation internals or provider mechanics.
+          Slice 3 successfully produced a fully structured, validated, and
+          grounded <code>Lesson</code> object. The downstream Slice 4 Deck
+          Editor consumes this typed payload without needing knowledge of
+          generation internals or provider mechanics.
         </p>
         <pre className={styles.codeBlock}>
-{`// Slice 4 Ingestion Contract
+          {`// Slice 4 Ingestion Contract
 export interface Slice4HandoffPayload {
   lesson: Lesson;           // id: "${lesson.id}", ${lesson.cards.length} cards, schema v${lesson.version || 1}
   sourceAnalysis: SourceAnalysis; // ${sourceAnalysis.sections.length} sections, ${sourceAnalysis.keyTerms.length} terms
@@ -459,6 +563,16 @@ export interface Slice4HandoffPayload {
   provider: "${result.provider}";
 }`}
         </pre>
+        <div style={{ marginTop: "1.25rem", display: "flex", gap: "0.75rem" }}>
+          <button
+            type="button"
+            onClick={handleOpenEditor}
+            className={styles.primaryAction}
+            id="handoff-open-editor-btn"
+          >
+            <span>Open in Card Deck Editor →</span>
+          </button>
+        </div>
       </section>
     </div>
   );

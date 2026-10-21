@@ -6,7 +6,7 @@
     "dev": "react-router dev",
     "build": "react-router build",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test tests_reader.mjs tests_slice3.mjs"
+    "test": "node --experimental-strip-types --test tests_reader.mjs tests_slice3.mjs tests_slice4.mjs"
   },
   "dependencies": {
     "@react-router/node": "7.18.4",
