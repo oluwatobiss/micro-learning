@@ -1,4 +1,5 @@
-﻿import type { Lesson } from "../types/lesson";
+import { REACT_RENDER_LOOP_SPEC } from "../types/media.ts";
+import type { Lesson } from "../types/lesson";
 
 export const SAMPLE_ARTICLE_TEXT = `
 The Architecture of Micro-Learning: Why Coherent Chunking Beats Endless Summaries
@@ -169,6 +170,7 @@ React places this state request into a queue and schedules a re-render. During t
       title: "The State-to-DOM Render Loop",
       content: `The diagram below illustrates the exact cycle triggered every time state changes:`,
       visualSvg: "react-render-loop",
+      visualMedia: REACT_RENDER_LOOP_SPEC,
     },
     {
       id: "rs-4",

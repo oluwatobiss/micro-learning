@@ -21,8 +21,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({ card }) => {
   };
 
   // Determine if this card has an instructionally justified diagram
-  const hasDiagram =
-    card.visualSvg === "react-render-loop" || Boolean(card.visualSvg);
+  const hasDiagram = Boolean(card.visualMedia || card.visualSvg);
 
   return (
     <article className={styles.cardContainer} aria-label={card.title}>
@@ -36,11 +35,8 @@ export const LessonCard: React.FC<LessonCardProps> = ({ card }) => {
       {hasDiagram && (
         <div className={styles.visualContainer}>
           <InstructionalDiagram
-            diagramId={
-              card.visualSvg === "react-render-loop"
-                ? "react-render-loop"
-                : "react-render-loop"
-            }
+            diagramId={card.visualSvg}
+            mediaSpec={card.visualMedia}
           />
         </div>
       )}

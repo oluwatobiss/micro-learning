@@ -91,7 +91,7 @@
 
 .btnGroup {
   display: flex;
-  gap: 0.85rem;
+  gap: 1rem; /* Deliberate 16px horizontal spacing on desktop */
   align-items: center;
 }
 

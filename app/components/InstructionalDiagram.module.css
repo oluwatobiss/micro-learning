@@ -1,40 +1,173 @@
-/* Instructional Diagram Styling */
+/* Responsive Instructional Media: Process Flow */
 .diagramWrapper {
-  margin: 1.5rem 0;
-  padding: 1.25rem 1rem;
+  margin: 1.75rem 0;
+  padding: 1.5rem 1.25rem;
   background-color: var(--bg-surface-elevated);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
+  width: 100%;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.diagramTitle {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--accent-primary);
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.flowList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.stepItem {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.stepItem:last-child {
+  flex: 1;
+}
+
+.stepNode {
+  flex: 1;
+  min-height: 96px;
+  padding: 0.85rem 0.75rem;
+  border-radius: var(--radius-md);
+  background-color: var(--bg-surface);
+  border: 1.5px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.stepNode:hover {
+  transform: translateY(-1px);
+}
+
+.stepTitle {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.35;
+  margin-bottom: 0.35rem;
+  letter-spacing: -0.01em;
+}
+
+.stepDesc {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* Variant Accents */
+.node_accent {
+  border-color: var(--accent-primary);
+}
+
+.node_accent .stepTitle {
+  color: var(--accent-primary);
+}
+
+.node_success {
+  border-color: var(--feedback-success);
+}
+
+.node_success .stepTitle {
+  color: var(--feedback-success);
+}
+
+/* Connector Arrow */
+.connector {
+  display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  width: 32px;
+  flex-shrink: 0;
 }
 
-.desktopSvg {
+.arrowSvg {
   display: block;
-  width: 100%;
-  height: auto;
-  max-width: 740px;
+  width: 20px;
+  height: 20px;
+  color: var(--accent-primary);
+  transform-origin: center;
+  transition: transform var(--transition-fast);
 }
 
-.mobileSvg {
-  display: none;
-  width: 100%;
-  max-width: 360px;
-  height: auto;
-  margin: 0 auto;
-}
-
+/* Responsive Mobile Layout (<= 640px): Vertical Stack with Centered Downward Connectors */
 @media (max-width: 640px) {
   .diagramWrapper {
-    padding: 1rem 0.5rem;
+    padding: 1.25rem 0.85rem;
   }
-  .desktopSvg {
-    display: none;
+
+  .flowList {
+    flex-direction: column;
+    align-items: center;
   }
-  .mobileSvg {
-    display: block;
+
+  .stepItem {
+    flex-direction: column;
+    width: 100%;
+    flex: none;
+  }
+
+  .stepNode {
+    width: 100%;
+    min-height: auto;
+    padding: 0.95rem 1rem;
+    text-align: center;
+  }
+
+  .stepTitle {
+    font-size: 0.95rem;
+  }
+
+  .stepDesc {
+    font-size: 0.84rem;
+  }
+
+  .connector {
+    width: 100%;
+    height: 32px;
+  }
+
+  .arrowSvg {
+    transform: rotate(90deg);
   }
 }

@@ -72,6 +72,33 @@ Activity mode: not established
 
 ## Revisions
 
+### Checkpoint 1 Follow-up: Responsive Illustration Fixes & Instructional Media Architecture
+
+- **Date:** October 21, 2026
+- **Status:** Verified & Complete
+- **Scope & Implementation:**
+  1. **Elimination of Duplicate Illustrations:**
+     - Identified root cause of the duplicate illustration in previous screenshot: two separate `<svg>` elements (one desktop, one mobile) were simultaneously present in the DOM with hardcoded coordinates.
+     - Replaced with a single, unified, semantic `<figure>` and `<ol>` layout in `InstructionalDiagram.tsx` driven by structured data (`ProcessFlowSpec`).
+     - Screen readers now encounter exactly one logical representation in the accessibility tree with an accessible summary caption (`<figcaption className="srOnly">`).
+  2. **Accurate & Responsive Diagram Connectors:**
+     - Solved broken SVG marker orientation and connector alignment by shifting from brittle hard-coded coordinates to semantic in-flow connector vectors.
+     - Desktop presents horizontal sequence with right-pointing arrow vectors (`display: flex; flex-direction: row;`).
+     - Mobile presents vertical sequence (`flex-direction: column;`) with downward-pointing arrow vectors centered between node bottom and node top (`height: 32px; width: 100%;`).
+     - Nodes dynamically adapt to wrapped descriptions without boundary collisions or detached arrows.
+     - Reviewed technical accuracy: step 2 accurately describes scheduling a re-render without mutating current closure, and step 4 clarifies minimal DOM reconciliation.
+  3. **Minimal Responsive Instructional-Media Architecture:**
+     - Created `app/types/media.ts` providing validated specifications (`ProcessFlowSpec`, `ComparisonSpec`) separating AI-generated content models from visual component rendering.
+     - Integrated `visualMedia` property onto `LessonCard` schema in `app/types/lesson.ts`.
+     - Built validation function `validateMediaSpec` for automatic pre-render visual-quality checks.
+  4. **Desktop Navigation Spacing:**
+     - Refined `.btnGroup` in `ReaderPlayer.module.css` with a deliberate `gap: 1rem;` (16px spacing) between Previous and Next controls on desktop.
+     - Maintained left alignment and visual hierarchy (secondary outline vs. primary filled accent).
+  5. **Verification & Checks:**
+     - `npm run typecheck`: 0 errors.
+     - `npm test`: 6/6 tests passing in `tests_reader.mjs`, including encoding integrity and media spec validation.
+     - `npm run build`: 100% successful production build.
+
 ### Final Reader Quality Pass: Responsive Navigation, Encoding, Illustrations & Accessibility
 
 - **Date:** October 20, 2026
@@ -107,7 +134,6 @@ Activity mode: not established
      - `npm run typecheck`: 0 errors.
      - `npm test`: 5/5 passing tests in `tests_reader.mjs`.
      - `npm run build`: successful production build.
-
 
 ### Checkpoint 1 Refinement: Reader UX, Persistence, Content Rendering & Environment Audit
 

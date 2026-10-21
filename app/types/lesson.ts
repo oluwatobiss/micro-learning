@@ -1,3 +1,4 @@
+import type { InstructionalMediaSpec } from "./media";
 export type ThemeMode = "clean-light" | "focused-dark" | "warm-editorial";
 
 export type CardType = "narrative" | "example" | "comparison" | "checkpoint";
@@ -21,7 +22,8 @@ export interface LessonCard {
   title: string;
   content: string; // Markdown formatted
   isLocked?: boolean;
-  visualSvg?: string; // Optional accessible concept diagram
+  visualSvg?: string; // Optional accessible concept diagram (legacy id)
+  visualMedia?: InstructionalMediaSpec; // Validated structured media specification
   checkpoint?: QuizCheckpoint; // Present if type === 'checkpoint'
 }
 

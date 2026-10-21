@@ -1,3 +1,7 @@
+import {
+  validateMediaSpec,
+  REACT_RENDER_LOOP_SPEC,
+} from "./app/types/media.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 
@@ -215,7 +219,10 @@ test("5. Encoding Integrity & Mojibake Prevention", () => {
     for (const card of lesson.cards) {
       textsToCheck.push(card.title, card.content);
       if (card.checkpoint) {
-        textsToCheck.push(card.checkpoint.question, card.checkpoint.explanation);
+        textsToCheck.push(
+          card.checkpoint.question,
+          card.checkpoint.explanation,
+        );
         for (const opt of card.checkpoint.options) {
           textsToCheck.push(opt.text);
         }
@@ -226,18 +233,102 @@ test("5. Encoding Integrity & Mojibake Prevention", () => {
       for (const pattern of mojibakePatterns) {
         assert.ok(
           !text.includes(pattern),
-          `Found mojibake pattern "${pattern}" in text: "${text.substring(0, 40)}..."`
+          `Found mojibake pattern "${pattern}" in text: "${text.substring(0, 40)}..."`,
         );
       }
     }
   }
 
   // Explicit positive check for em-dash in retention dilemma card
-  const sampleLesson = DEFAULT_LESSONS.find((l) => l.id === "micro-learning-architecture");
+  const sampleLesson = DEFAULT_LESSONS.find(
+    (l) => l.id === "micro-learning-architecture",
+  );
   assert.ok(sampleLesson, "Must find micro-learning-architecture lesson");
   const card1 = sampleLesson.cards[0];
   assert.ok(
     card1.content.includes("—leaving no lasting neural retention"),
-    "Card 1 must contain valid em dash '—'"
+    "Card 1 must contain valid em dash '—'",
   );
+});
+
+test("6. Instructional Media Architecture & Automatic Quality Checks", () => {
+  // A. Valid ProcessFlowSpec
+  const validCheck = validateMediaSpec(REACT_RENDER_LOOP_SPEC);
+  assert.equal(
+    validCheck.valid,
+    true,
+    "Preset REACT_RENDER_LOOP_SPEC must be valid",
+  );
+  assert.equal(validCheck.errors.length, 0);
+  assert.equal(
+    REACT_RENDER_LOOP_SPEC.steps.length,
+    4,
+    "Must have exactly 4 steps",
+  );
+
+  // B. Technical accuracy check of render-loop steps
+  const stepLabels = REACT_RENDER_LOOP_SPEC.steps.map((s) => s.label);
+  assert.ok(stepLabels[0].includes("User Action"));
+  assert.ok(stepLabels[1].includes("setState Called"));
+  assert.ok(stepLabels[2].includes("React Re-renders"));
+  assert.ok(stepLabels[3].includes("Commit & DOM Sync"));
+
+  // Descriptions must clarify scheduled re-render (not synchronous mutation)
+  const step2Desc = REACT_RENDER_LOOP_SPEC.steps[1].description.toLowerCase();
+  assert.ok(
+    step2Desc.includes("schedules re-render") &&
+      step2Desc.includes("does not mutate"),
+    "Step 2 must accurately describe that setState schedules rather than mutates synchronously",
+  );
+
+  // Step 4 must clarify minimal diffs
+  const step4Desc = REACT_RENDER_LOOP_SPEC.steps[3].description.toLowerCase();
+  assert.ok(
+    step4Desc.includes("diff"),
+    "Step 4 must accurately describe DOM reconciliation",
+  );
+
+  // C. Rejection of invalid specs
+  const invalidEmptySteps = validateMediaSpec({
+    type: "process-flow",
+    steps: [],
+  });
+  assert.equal(invalidEmptySteps.valid, false, "Must reject flow with 0 steps");
+
+  const invalidOneStep = validateMediaSpec({
+    type: "process-flow",
+    steps: [{ id: "1", label: "Solo", description: "Only one step" }],
+  });
+  assert.equal(invalidOneStep.valid, false, "Must reject flow with < 2 steps");
+
+  const invalidEmptyLabel = validateMediaSpec({
+    type: "process-flow",
+    steps: [
+      { id: "1", label: "", description: "Missing label" },
+      { id: "2", label: "Step 2", description: "Valid desc" },
+    ],
+  });
+  assert.equal(
+    invalidEmptyLabel.valid,
+    false,
+    "Must reject step with empty label",
+  );
+
+  const unsupportedType = validateMediaSpec({ type: "unsupported-3d-model" });
+  assert.equal(
+    unsupportedType.valid,
+    false,
+    "Must reject unsupported media type",
+  );
+
+  // D. Verify Lesson Card 3 references validated visualMedia
+  const reactLesson = DEFAULT_LESSONS.find(
+    (l) => l.id === "react-state-render-cycle",
+  );
+  assert.ok(reactLesson, "Must find react-state-render-cycle lesson");
+  const card3 = reactLesson.cards.find((c) => c.id === "rs-3");
+  assert.ok(card3, "Must find card rs-3");
+  assert.ok(card3.visualMedia, "Card rs-3 must have visualMedia configured");
+  assert.equal(card3.visualMedia.type, "process-flow");
+  assert.equal(card3.visualMedia.steps.length, 4);
 });

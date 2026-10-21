@@ -12,6 +12,7 @@
       "~/*": ["./app/*"]
     },
     "noEmit": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true
   }
 }
