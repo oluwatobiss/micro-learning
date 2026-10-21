@@ -29,7 +29,7 @@ Build mode: fast
       Learner check: Advance to the checkpoint card in the reader player, pick an answer to see the instant feedback and explanation, and finish the lesson to view the completion summary and original source link.
       Commit: `Implement grounded comprehension checkpoint with explanations and completion recap`
 
-- [ ] **3. Creator Studio Source Input, Validation & 5-Stage Adaptive Generation Engine**
+- [x] **3. Creator Studio Source Input, Validation & 5-Stage Adaptive Generation Engine**
       Becomes usable: The Creator Studio at `/studio`! Creator enters article text (or clicks "Load Sample Article"), supplies required attribution metadata, and checks authorization. Clicking "Generate Lesson" runs the 5-stage adaptive extraction pipeline (`Understanding source` -> `Planning lesson` -> `Creating cards` -> `Creating checks` -> `Checking quality`) with live visual progress.
       Why now: Solves the creator input and AI transformation engine, proving that lessons are adaptively planned from source structure and claims rather than a rigid fixed template.
       PRD ref: `prd.md > 2. Source Input & Validation`, `prd.md > 3. Adaptive Generation Pipeline`
@@ -168,3 +168,41 @@ Activity mode: not established
   8. **Automated Verification:**
      - Added `tests_reader.mjs` test suite and `"test"` script in `package.json`.
      - Verified: `npm run typecheck` (0 errors), `npm run build` (production build passes), and `npm test` (4/4 tests pass).
+
+### Checkpoint 2 / Slice 3 Delivery: Creator Studio Source Input, Validation & 5-Stage Adaptive Generation Engine
+
+Completed and verified the implementation of **Slice 3**:
+
+1. **Creator Studio Source Input (`app/components/studio/SourceInputForm.tsx` & `.module.css`):**
+   - Implemented dedicated creator authoring route at `/studio`.
+   - Fields: Lesson Title, Original Author / Creator, Source Article URL, Source Article Text, and Ownership / Permission Acknowledgment.
+   - Shared word-count utility (`app/utils/text.ts`) with strict boundaries: minimum 200 words, maximum 10,000 words.
+   - Accessible validation feedback associating errors to form fields (`aria-required`, `aria-invalid`, `aria-describedby`, `role="alert"`), autofocusing the first invalid element upon submission failure.
+   - Live word count and requirement status counter with visual and aria-live feedback.
+   - "Load Sample Article" action pre-populating a comprehensive software-development article (*Optimistic UI and Mutation Resilience in Modern Web Apps*), keeping the permission checkbox intentionally unconfirmed to require explicit creator acknowledgment.
+
+2. **Five-Stage Adaptive Generation Engine (`app/services/generator.ts`):**
+   - **Stage 1 (Understanding Source):** Extracts central thesis, section structures, literal code snippets, key terminology, process flows, and comparison points without fabricating facts or citations.
+   - **Stage 2 (Planning Lesson):** Dynamically blueprints an instructional progression of 4?8 cards tailored to the source structure rather than a fixed rigid template.
+   - **Stage 3 (Creating Cards):** Generates narrative explanations, literal TypeScript code blocks, and structured visual diagram specifications (`ProcessFlowSpec`) validated through `validateMediaSpec`.
+   - **Stage 4 (Creating Checks):** Formulates grounded comprehension checkpoints with exactly one unambiguous correct answer, plausible distractors, and educational explanations.
+   - **Stage 5 (Checking Quality):** Executes deterministic quality audits verifying metadata, stable UUIDs, card count bounds, code block fence integrity, media specifications, checkpoint integrity, takeaways completeness, and factual grounding score.
+
+3. **Truthful Progress Reporting (`app/components/studio/GenerationProgressOverlay.tsx` & `.module.css`):**
+   - Real-time progress tracker reflecting truthful async progression across all 5 stages (`pending`, `in-progress`, `complete`, `failed`).
+   - Distinct visual state badges, stage status descriptions, and error recovery handling with retry or return actions without losing creator input.
+   - Fully supports `prefers-reduced-motion` and screen reader announcements (`role="status"`, `aria-live="polite"`).
+
+4. **Generation Result & Slice 4 Handoff Interface (`app/components/studio/GenerationResultReview.tsx` & `.module.css`):**
+   - Summary display featuring lesson metrics (title, author, source link, card count, estimated read time, source word count, quality score).
+   - Deterministic Quality Audit report displaying all passed checks and warnings.
+   - Read-only Card Deck Inspector allowing expandable review of card Markdown, diagrams, and checkpoint questions.
+   - Direct integration with `storageService.saveLesson` allowing creators to test their newly generated lesson in the live Reader player (`/lessons/:id`).
+   - Clean, typed handoff contract (`Slice4HandoffPayload`) delivering a valid `Lesson` instance to the downstream Slice 4 Card Deck Editor.
+
+5. **Automated Verification:**
+   - Authored `tests_slice3.mjs` covering word-count boundaries, URL validation, missing field detection, permission enforcement, sample article loading, 5-stage pipeline order, grounded analysis, card synthesis, checkpoint contract, quality audits, and Slice 4 handoff integrity.
+   - Combined test suite runs via `npm test` (`tests_reader.mjs` + `tests_slice3.mjs`) -> **16/16 tests passing**.
+   - Typecheck (`tsc --noEmit`) -> **0 errors**.
+   - Production bundle (`npm run build`) -> **Succeeds cleanly** with client and SSR assets.
+   - Browser Subagent verified the entire user journey end-to-end at `http://127.0.0.1:5173/studio` across Clean Light, Focused Dark, and Warm Editorial themes.

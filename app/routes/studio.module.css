@@ -1,0 +1,15 @@
+/* Studio Page Route Layout */
+.studioPage {
+  min-height: calc(100vh - 64px);
+  padding: 3rem 1.5rem 5rem;
+  background-color: var(--bg-page);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+@media (max-width: 640px) {
+  .studioPage {
+    padding: 1.5rem 1rem 3rem;
+  }
+}
