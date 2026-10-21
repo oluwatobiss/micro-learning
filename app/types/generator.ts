@@ -74,13 +74,15 @@ export interface QualityAuditReport {
   warnings: string[];
   errors: string[];
   groundingScore: number;
+  totalChecksCount: number;
   mediaValidation?: {
     valid: boolean;
     errors: string[];
   };
 }
 
-export type StageExecutionStatus = "pending" | "in-progress" | "complete" | "failed";
+export type StageExecutionStatus =
+  "pending" | "in-progress" | "complete" | "failed";
 
 export interface StageState {
   id: GenerationStageId;

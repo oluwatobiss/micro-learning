@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import type { MetaFunction } from "react-router";
-import type { SourceInputData, GenerationProgressState, GenerationResult } from "../types/generator";
+import type {
+  SourceInputData,
+  GenerationProgressState,
+  GenerationResult,
+} from "../types/generator";
 import { generateLesson } from "../services/generator";
 import { SourceInputForm } from "../components/studio/SourceInputForm";
 import { GenerationProgressOverlay } from "../components/studio/GenerationProgressOverlay";
@@ -9,10 +13,11 @@ import styles from "./studio.module.css";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "Creator Studio ? MicroLearning Studio" },
+    { title: "Creator Studio — MicroLearning Studio" },
     {
       name: "description",
-      content: "Transform long-form engineering articles and technical guides into interactive micro-learning card decks using our 5-stage adaptive generation engine.",
+      content:
+        "Transform long-form engineering articles and technical guides into interactive micro-learning card decks using our 5-stage adaptive generation engine.",
     },
   ];
 };
@@ -23,32 +28,36 @@ const INITIAL_PROGRESS: GenerationProgressState = {
   stages: {
     understanding: {
       id: "understanding",
-      label: "Stage 1 ? Understanding Source",
-      description: "Extracting thesis, terminology, code patterns, and relationships from source.",
+      label: "Stage 1 — Understanding Source",
+      description:
+        "Extracting thesis, terminology, code patterns, and relationships from source.",
       status: "pending",
     },
     planning: {
       id: "planning",
-      label: "Stage 2 ? Planning Lesson",
-      description: "Formulating adaptive 4?8 card pedagogical progression.",
+      label: "Stage 2 — Planning Lesson",
+      description: "Formulating adaptive 4–8 card pedagogical progression.",
       status: "pending",
     },
     cards: {
       id: "cards",
-      label: "Stage 3 ? Creating Cards",
-      description: "Drafting grounded narrative cards, code blocks, and structured diagrams.",
+      label: "Stage 3 — Creating Cards",
+      description:
+        "Drafting grounded narrative cards, code blocks, and structured diagrams.",
       status: "pending",
     },
     checks: {
       id: "checks",
-      label: "Stage 4 ? Creating Checks",
-      description: "Formulating grounded comprehension checkpoints with distractors and explanations.",
+      label: "Stage 4 — Creating Checks",
+      description:
+        "Formulating grounded comprehension checkpoints with distractors and explanations.",
       status: "pending",
     },
     quality: {
       id: "quality",
-      label: "Stage 5 ? Checking Quality",
-      description: "Verifying schema integrity, media specifications, and pedagogical balance.",
+      label: "Stage 5 — Checking Quality",
+      description:
+        "Verifying schema integrity, media specifications, and pedagogical balance.",
       status: "pending",
     },
     ready: {
@@ -65,8 +74,10 @@ const INITIAL_PROGRESS: GenerationProgressState = {
 export default function StudioRoute() {
   const [viewMode, setViewMode] = useState<StudioViewMode>("input");
   const [lastInput, setLastInput] = useState<SourceInputData | null>(null);
-  const [progress, setProgress] = useState<GenerationProgressState>(INITIAL_PROGRESS);
+  const [progress, setProgress] =
+    useState<GenerationProgressState>(INITIAL_PROGRESS);
   const [result, setResult] = useState<GenerationResult | null>(null);
+  const [formResetCounter, setFormResetCounter] = useState(0);
 
   const handleStartGeneration = async (input: SourceInputData) => {
     setLastInput(input);
@@ -81,7 +92,10 @@ export default function StudioRoute() {
       setResult(generated);
       setViewMode("review");
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "An unexpected error occurred during generation.";
+      const message =
+        err instanceof Error
+          ? err.message
+          : "An unexpected error occurred during generation.";
       setProgress((prev) => ({
         ...prev,
         overallStatus: "failed",
@@ -101,15 +115,28 @@ export default function StudioRoute() {
   };
 
   const handleCreateAnother = () => {
+    // Reset all transient state from the previous generation
     setResult(null);
+    setLastInput(null);
     setProgress(INITIAL_PROGRESS);
     setViewMode("input");
+    setFormResetCounter((c) => c + 1);
+
+    // Scroll back to top smoothly and focus the lesson title input
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      setTimeout(() => {
+        const titleInput = document.getElementById("lesson-title-input");
+        titleInput?.focus();
+      }, 60);
+    }
   };
 
   return (
     <div className={styles.studioPage}>
       {viewMode === "input" && (
         <SourceInputForm
+          key={formResetCounter}
           initialData={lastInput || undefined}
           onSubmit={handleStartGeneration}
         />

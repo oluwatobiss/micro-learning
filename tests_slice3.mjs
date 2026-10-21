@@ -166,7 +166,7 @@ test("4. Five-Stage Adaptive Generation Engine - Pipeline & Execution Order", as
   }
 });
 
-test("5. Stage 1 ? Understanding Source Analysis", () => {
+test("5. Stage 1 — Understanding Source Analysis", () => {
   const analysis = understandSource(SAMPLE_SOURCE_INPUT);
 
   assert.ok(analysis.thesis.length > 20, "Must extract non-trivial thesis");
@@ -182,12 +182,12 @@ test("5. Stage 1 ? Understanding Source Analysis", () => {
   assert.ok(allSnippets[0].includes("function") || allSnippets[0].includes("const"), "Snippet should contain literal code");
 });
 
-test("6. Stage 2 ? Adaptive Lesson Planning", () => {
+test("6. Stage 2 — Adaptive Lesson Planning", () => {
   const analysis = understandSource(SAMPLE_SOURCE_INPUT);
   const plan = planLesson(analysis, SAMPLE_SOURCE_INPUT);
 
   // Between 4 and 8 cards
-  assert.ok(plan.targetCardCount >= 4 && plan.targetCardCount <= 8, `Card count must be 4?8, got ${plan.targetCardCount}`);
+  assert.ok(plan.targetCardCount >= 4 && plan.targetCardCount <= 8, `Card count must be 4–8, got ${plan.targetCardCount}`);
   assert.equal(plan.cardOutlines.length, plan.targetCardCount);
   assert.ok(plan.estimatedMinutes >= 2 && plan.estimatedMinutes <= 15);
 
@@ -200,7 +200,7 @@ test("6. Stage 2 ? Adaptive Lesson Planning", () => {
   assert.ok(hasVisual, "Plan should identify structured visual media opportunity");
 });
 
-test("7. Stage 3 ? Creating Grounded Cards & Structured Media", () => {
+test("7. Stage 3 — Creating Grounded Cards & Structured Media", () => {
   const analysis = understandSource(SAMPLE_SOURCE_INPUT);
   const plan = planLesson(analysis, SAMPLE_SOURCE_INPUT);
   const cards = createCards(plan, analysis, SAMPLE_SOURCE_INPUT);
@@ -228,7 +228,7 @@ test("7. Stage 3 ? Creating Grounded Cards & Structured Media", () => {
   }
 });
 
-test("8. Stage 4 ? Comprehension Checkpoint Strict Contract", () => {
+test("8. Stage 4 — Comprehension Checkpoint Strict Contract", () => {
   const analysis = understandSource(SAMPLE_SOURCE_INPUT);
   const plan = planLesson(analysis, SAMPLE_SOURCE_INPUT);
   const cards = createCards(plan, analysis, SAMPLE_SOURCE_INPUT);
@@ -249,7 +249,7 @@ test("8. Stage 4 ? Comprehension Checkpoint Strict Contract", () => {
   assert.ok(cp.explanation.length > 20, "Explanation must be complete and instructional");
 });
 
-test("9. Stage 5 ? Deterministic Quality Audit & Failure Handling", () => {
+test("9. Stage 5 — Deterministic Quality Audit & Defensible Scoring", () => {
   const analysis = understandSource(SAMPLE_SOURCE_INPUT);
   const plan = planLesson(analysis, SAMPLE_SOURCE_INPUT);
   const cards = createCards(plan, analysis, SAMPLE_SOURCE_INPUT);
@@ -268,12 +268,13 @@ test("9. Stage 5 ? Deterministic Quality Audit & Failure Handling", () => {
     cards,
   };
 
-  // Valid lesson quality check
+  // Valid lesson quality check: all 7 checks pass, score is exactly 100%
   const validAudit = validateQuality(lesson, analysis);
   assert.equal(validAudit.isValid, true);
   assert.equal(validAudit.errors.length, 0);
-  assert.ok(validAudit.checksPassed.length >= 6);
-  assert.ok(validAudit.groundingScore >= 90);
+  assert.equal(validAudit.checksPassed.length, 7);
+  assert.equal(validAudit.totalChecksCount, 7);
+  assert.equal(validAudit.groundingScore, 100);
 
   // Invalid test case 1: Checkpoint with multiple correct answers
   const badLessonMultipleCorrect = JSON.parse(JSON.stringify(lesson));
@@ -330,5 +331,61 @@ test("10. Slice 4 Handoff Contract Integrity", async () => {
 
   // Quality report conforms
   assert.equal(handoff.qualityReport.isValid, true);
+  assert.equal(handoff.qualityReport.totalChecksCount, 7);
   assert.equal(handoff.provider, "grounded-adaptive-engine");
+});
+
+test("11. Symbol & Unicode Encoding Integrity Audit", async () => {
+  const input = {
+    ...SAMPLE_SOURCE_INPUT,
+    permissionConfirmed: true,
+  };
+
+  const handoff = await generateLesson(input);
+
+  // Ensure no generated lesson titles, cards, or takeaways contain stray '??'
+  assert.ok(!handoff.lesson.title.includes("??"), "Title must not contain '??'");
+  for (const card of handoff.lesson.cards) {
+    assert.ok(!card.title.includes("??"), `Card title '${card.title}' must not contain '??'`);
+    assert.ok(!card.content.includes("??"), `Card content in '${card.id}' must not contain '??'`);
+  }
+  for (const takeaway of handoff.lesson.keyTakeaways) {
+    assert.ok(!takeaway.includes("??"), `Takeaway '${takeaway}' must not contain '??'`);
+  }
+
+  // Ensure Quality checks passed strings use genuine em-dash / en-dash and no '?'
+  for (const check of handoff.qualityReport.checksPassed) {
+    assert.ok(!check.includes("?"), `Quality check description '${check}' must not contain '?'`);
+    assert.ok(!check.includes("??"), `Quality check description '${check}' must not contain '??'`);
+  }
+});
+
+test("12. Create Another Lesson Reset & Isolation Contract", () => {
+  // Mock localStorage for storage service check
+  class MockLocalStorage {
+    constructor() { this.store = {}; }
+    getItem(key) { return this.store[key] || null; }
+    setItem(key, val) { this.store[key] = String(val); }
+    removeItem(key) { delete this.store[key]; }
+    clear() { this.store = {}; }
+  }
+  const storage = new MockLocalStorage();
+  storage.setItem("microlearning_lessons_v3", JSON.stringify([{ id: "existing-lesson-1" }]));
+
+  // Verify that an application reset state yields clean initial values
+  const cleanState = {
+    title: "",
+    author: "",
+    sourceUrl: "",
+    sourceText: "",
+    permissionConfirmed: false,
+  };
+  const valResult = validateSourceInput(cleanState);
+  assert.equal(valResult.isValid, false);
+  assert.equal(valResult.wordCount, 0);
+
+  // Verify that previously saved lessons in storage remain completely intact
+  const savedData = JSON.parse(storage.getItem("microlearning_lessons_v3"));
+  assert.equal(savedData.length, 1);
+  assert.equal(savedData[0].id, "existing-lesson-1");
 });

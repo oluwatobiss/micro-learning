@@ -1,5 +1,8 @@
 import type { Lesson, LessonCard, QuizCheckpoint } from "../types/lesson";
-import type { InstructionalMediaSpec, ProcessFlowSpec } from "../types/media.ts";
+import type {
+  InstructionalMediaSpec,
+  ProcessFlowSpec,
+} from "../types/media.ts";
 import { validateMediaSpec } from "../types/media.ts";
 import type {
   SourceInputData,
@@ -94,7 +97,11 @@ export function understandSource(input: SourceInputData): SourceAnalysis {
 
   while ((match = termRegex.exec(text)) !== null) {
     const rawTerm = match[1].trim();
-    if (rawTerm.length > 3 && rawTerm.length < 40 && !seenTerms.has(rawTerm.toLowerCase())) {
+    if (
+      rawTerm.length > 3 &&
+      rawTerm.length < 40 &&
+      !seenTerms.has(rawTerm.toLowerCase())
+    ) {
       seenTerms.add(rawTerm.toLowerCase());
       const termSentence = findSentenceWithTerm(text, rawTerm);
       keyTerms.push({
@@ -139,7 +146,7 @@ export function understandSource(input: SourceInputData): SourceAnalysis {
       s.heading.toLowerCase().includes("vs") ||
       s.heading.toLowerCase().includes("versus") ||
       s.heading.toLowerCase().includes("comparison") ||
-      s.heading.toLowerCase().includes("trade-off")
+      s.heading.toLowerCase().includes("trade-off"),
   );
 
   if (compSection) {
@@ -164,8 +171,12 @@ export function understandSource(input: SourceInputData): SourceAnalysis {
 
   const takeaways: string[] = [
     `Core Thesis: ${thesis.slice(0, 160)}${thesis.length > 160 ? "..." : ""}`,
-    keyTerms[0] ? `${keyTerms[0].term}: ${keyTerms[0].definition}` : "Disciplined state isolation preserves data integrity.",
-    processSteps.length >= 2 ? `Multi-stage execution requires strict rollback buffers on failure.` : "Sequential verification anchors core concepts.",
+    keyTerms[0]
+      ? `${keyTerms[0].term}: ${keyTerms[0].definition}`
+      : "Disciplined state isolation preserves data integrity.",
+    processSteps.length >= 2
+      ? `Multi-stage execution requires strict rollback buffers on failure.`
+      : "Sequential verification anchors core concepts.",
     "Idempotent API mutations guarantee safe client-side recovery without duplicate server side-effects.",
   ];
 
@@ -188,7 +199,9 @@ export function understandSource(input: SourceInputData): SourceAnalysis {
 
 function findSentenceWithTerm(text: string, term: string): string {
   const sentences = text.split(/(?<=[.?!])\s+/);
-  const match = sentences.find((s) => s.toLowerCase().includes(term.toLowerCase()));
+  const match = sentences.find((s) =>
+    s.toLowerCase().includes(term.toLowerCase()),
+  );
   if (match) {
     return match.replace(/\*\*/g, "").replace(/\n/g, " ").trim();
   }
@@ -199,21 +212,26 @@ function findSentenceWithTerm(text: string, term: string): string {
  * Stage 2: Planning Lesson
  * Determines an adaptive 4 to 8 card progression based on extracted source structure.
  */
-export function planLesson(analysis: SourceAnalysis, input: SourceInputData): LessonPlan {
+export function planLesson(
+  analysis: SourceAnalysis,
+  input: SourceInputData,
+): LessonPlan {
   const cardOutlines: PlannedCard[] = [];
 
   cardOutlines.push({
     id: "c1",
     type: "narrative",
     title: "Perceived Latency & The Optimistic Model",
-    focus: "Introduction of the core latency dilemma and why optimistic prediction beats waiting.",
+    focus:
+      "Introduction of the core latency dilemma and why optimistic prediction beats waiting.",
   });
 
   cardOutlines.push({
     id: "c2",
     type: "narrative",
     title: "The Five-Stage Execution Flow",
-    focus: "Unfolding the sequence from user action to snapshot, optimistic render, and network dispatch.",
+    focus:
+      "Unfolding the sequence from user action to snapshot, optimistic render, and network dispatch.",
   });
 
   const hasCode = analysis.sections.some((s) => s.codeSnippets.length > 0);
@@ -222,7 +240,8 @@ export function planLesson(analysis: SourceAnalysis, input: SourceInputData): Le
       id: "c3",
       type: "example",
       title: "Implementing Rollback Buffers",
-      focus: "Literal TypeScript implementation of state snapshot isolation and rollback.",
+      focus:
+        "Literal TypeScript implementation of state snapshot isolation and rollback.",
       hasCode: true,
     });
   }
@@ -232,7 +251,8 @@ export function planLesson(analysis: SourceAnalysis, input: SourceInputData): Le
       id: "c4",
       type: "narrative",
       title: "Optimistic State-to-Server Architecture",
-      focus: "Structured process-flow visual specification mapping user mutation to reconciliation.",
+      focus:
+        "Structured process-flow visual specification mapping user mutation to reconciliation.",
       hasVisualMedia: true,
     });
   }
@@ -241,14 +261,16 @@ export function planLesson(analysis: SourceAnalysis, input: SourceInputData): Le
     id: "c5",
     type: "comparison",
     title: "Optimistic vs. Pessimistic Trade-offs",
-    focus: "Balancing zero perceived latency against complexity, conflict resolution, and failure frequency.",
+    focus:
+      "Balancing zero perceived latency against complexity, conflict resolution, and failure frequency.",
   });
 
   cardOutlines.push({
     id: "c6",
     type: "checkpoint",
     title: "Comprehension Checkpoint",
-    focus: "Self-contained evaluation of rollback buffers, network failure, and idempotency.",
+    focus:
+      "Self-contained evaluation of rollback buffers, network failure, and idempotency.",
   });
 
   return {
@@ -265,7 +287,7 @@ export function planLesson(analysis: SourceAnalysis, input: SourceInputData): Le
 export function createCards(
   plan: LessonPlan,
   analysis: SourceAnalysis,
-  input: SourceInputData
+  input: SourceInputData,
 ): LessonCard[] {
   const cards: LessonCard[] = [];
 
@@ -347,7 +369,7 @@ export function createCards(
  */
 export function createComprehensionChecks(
   cards: LessonCard[],
-  analysis: SourceAnalysis
+  analysis: SourceAnalysis,
 ): void {
   const checkpointCard = cards.find((c) => c.type === "checkpoint");
   if (!checkpointCard) return;
@@ -393,7 +415,7 @@ export function createComprehensionChecks(
  */
 export function validateQuality(
   lesson: Lesson,
-  analysis: SourceAnalysis
+  analysis: SourceAnalysis,
 ): QualityAuditReport {
   const checksPassed: string[] = [];
   const warnings: string[] = [];
@@ -401,7 +423,7 @@ export function validateQuality(
 
   if (lesson.id && lesson.title && lesson.author && lesson.sourceUrl) {
     checksPassed.push(
-      "Lesson metadata (id, title, author, sourceUrl) is complete and well-formed."
+      "Lesson metadata (id, title, author, sourceUrl) is complete and well-formed.",
     );
   } else {
     errors.push("Missing required lesson metadata fields.");
@@ -409,11 +431,11 @@ export function validateQuality(
 
   if (lesson.cards.length >= 4 && lesson.cards.length <= 8) {
     checksPassed.push(
-      `Card count (${lesson.cards.length} cards) is within the optimal 4–8 range.`
+      `Card count (${lesson.cards.length} cards) is within the optimal 4–8 range.`,
     );
   } else {
     errors.push(
-      `Card count (${lesson.cards.length}) is outside the acceptable 4–8 card range.`
+      `Card count (${lesson.cards.length}) is outside the acceptable 4–8 card range.`,
     );
   }
 
@@ -436,7 +458,7 @@ export function validateQuality(
   }
   if (allContentValid) {
     checksPassed.push(
-      "All cards have unique identifiers, non-empty titles, and substantial Markdown content."
+      "All cards have unique identifiers, non-empty titles, and substantial Markdown content.",
     );
   }
 
@@ -444,13 +466,15 @@ export function validateQuality(
   for (const card of lesson.cards) {
     const fences = (card.content.match(/```/g) || []).length;
     if (fences % 2 !== 0) {
-      errors.push(`Card "${card.id}" contains an unclosed Markdown code fence.`);
+      errors.push(
+        `Card "${card.id}" contains an unclosed Markdown code fence.`,
+      );
       codeBlocksValid = false;
     }
   }
   if (codeBlocksValid) {
     checksPassed.push(
-      "All Markdown fenced code blocks are properly opened, closed, and formatted."
+      "All Markdown fenced code blocks are properly opened, closed, and formatted.",
     );
   }
 
@@ -463,14 +487,14 @@ export function validateQuality(
         mediaValid = false;
         mediaErrors.push(...res.errors);
         errors.push(
-          `Card "${card.id}" media spec failed validation: ${res.errors.join(", ")}`
+          `Card "${card.id}" media spec failed validation: ${res.errors.join(", ")}`,
         );
       }
     }
   }
   if (mediaValid) {
     checksPassed.push(
-      "Instructional media specifications conform to schema and pass validation."
+      "Instructional media specifications conform to schema and pass validation.",
     );
   }
 
@@ -481,29 +505,31 @@ export function validateQuality(
     for (const cpCard of checkpointCards) {
       const cp = cpCard.checkpoint;
       if (!cp) {
-        errors.push(`Checkpoint card "${cpCard.id}" lacks a checkpoint object.`);
+        errors.push(
+          `Checkpoint card "${cpCard.id}" lacks a checkpoint object.`,
+        );
         continue;
       }
       if (!cp.question || cp.question.trim().length < 20) {
         errors.push(
-          `Checkpoint question on "${cpCard.id}" is too brief or missing.`
+          `Checkpoint question on "${cpCard.id}" is too brief or missing.`,
         );
       }
       if (!Array.isArray(cp.options) || cp.options.length < 3) {
         errors.push(
-          `Checkpoint on "${cpCard.id}" must provide at least 3 options.`
+          `Checkpoint on "${cpCard.id}" must provide at least 3 options.`,
         );
       } else {
         const correctOptions = cp.options.filter((o) => o.isCorrect);
         if (correctOptions.length !== 1) {
           errors.push(
-            `Checkpoint on "${cpCard.id}" must have exactly ONE correct option. Found: ${correctOptions.length}.`
+            `Checkpoint on "${cpCard.id}" must have exactly ONE correct option. Found: ${correctOptions.length}.`,
           );
         }
       }
       if (!cp.explanation || cp.explanation.trim().length < 15) {
         errors.push(
-          `Checkpoint on "${cpCard.id}" must have an educational explanation.`
+          `Checkpoint on "${cpCard.id}" must have an educational explanation.`,
         );
       }
     }
@@ -512,23 +538,25 @@ export function validateQuality(
         .length === 0
     ) {
       checksPassed.push(
-        "Comprehension checkpoint verified: self-contained question, exactly 1 correct answer, and grounded explanation."
+        "Comprehension checkpoint verified: self-contained question, exactly 1 correct answer, and grounded explanation.",
       );
     }
   }
 
   if (Array.isArray(lesson.keyTakeaways) && lesson.keyTakeaways.length >= 2) {
     checksPassed.push(
-      `Key takeaways verified (${lesson.keyTakeaways.length} takeaways generated).`
+      `Key takeaways verified (${lesson.keyTakeaways.length} takeaways generated).`,
     );
   } else {
     warnings.push(
-      "Lesson should have at least 2 key takeaways for the completion screen."
+      "Lesson should have at least 2 key takeaways for the completion screen.",
     );
   }
 
-  const groundingScore =
-    errors.length === 0 ? 98 : Math.max(50, 100 - errors.length * 15);
+  const totalChecksCount = 7;
+  const groundingScore = Math.round(
+    (checksPassed.length / totalChecksCount) * 100,
+  );
 
   return {
     isValid: errors.length === 0,
@@ -538,6 +566,7 @@ export function validateQuality(
     warnings,
     errors,
     groundingScore,
+    totalChecksCount,
     mediaValidation: {
       valid: mediaValid,
       errors: mediaErrors,
@@ -551,7 +580,7 @@ export function validateQuality(
  */
 export async function generateLesson(
   input: SourceInputData,
-  onProgress?: (state: GenerationProgressState) => void
+  onProgress?: (state: GenerationProgressState) => void,
 ): Promise<GenerationResult> {
   const stageDefs: Array<{
     id: GenerationStageId;
@@ -560,33 +589,35 @@ export async function generateLesson(
   }> = [
     {
       id: "understanding",
-      label: "1. Understanding source",
+      label: "Stage 1 — Understanding Source",
       desc: "Extracting thesis, technical structure, code snippets, and concepts...",
     },
     {
       id: "planning",
-      label: "2. Planning lesson",
-      desc: "Determining adaptive card count, pedagogical flow, and visual opportunities...",
+      label: "Stage 2 — Planning Lesson",
+      desc: "Determining adaptive 4–8 card pedagogical progression...",
     },
     {
       id: "cards",
-      label: "3. Creating cards",
+      label: "Stage 3 — Creating Cards",
       desc: "Synthesizing narrative explanations, code blocks, and structured diagrams...",
     },
     {
       id: "checks",
-      label: "4. Creating checks",
+      label: "Stage 4 — Creating Checks",
       desc: "Formulating grounded comprehension checkpoints with educational explanations...",
     },
     {
       id: "quality",
-      label: "5. Checking quality",
+      label: "Stage 5 — Checking Quality",
       desc: "Running deterministic schema, media, and quality verification...",
     },
   ];
 
-  const stages: Record<GenerationStageId, StageState> =
-    {} as Record<GenerationStageId, StageState>;
+  const stages: Record<GenerationStageId, StageState> = {} as Record<
+    GenerationStageId,
+    StageState
+  >;
   for (const s of stageDefs) {
     stages[s.id] = {
       id: s.id,
@@ -599,7 +630,7 @@ export async function generateLesson(
   const updateProgress = (
     stageId: GenerationStageId,
     status: "in-progress" | "complete" | "failed",
-    msg?: string
+    msg?: string,
   ) => {
     stages[stageId] = {
       ...stages[stageId],
@@ -623,53 +654,53 @@ export async function generateLesson(
     updateProgress(
       "understanding",
       "in-progress",
-      "Analyzing source text, extracting thesis, code patterns, and terminology..."
+      "Analyzing source text, extracting thesis, code patterns, and terminology...",
     );
     await new Promise((resolve) => setTimeout(resolve, 80));
     const analysis = understandSource(input);
     updateProgress(
       "understanding",
       "complete",
-      `Extracted ${analysis.sections.length} sections, ${analysis.keyTerms.length} terms, and ${analysis.totalWordCount} words.`
+      `Extracted ${analysis.sections.length} sections, ${analysis.keyTerms.length} terms, and ${analysis.totalWordCount} words.`,
     );
 
     updateProgress(
       "planning",
       "in-progress",
-      "Planning adaptive card deck progression..."
+      "Planning adaptive card deck progression...",
     );
     await new Promise((resolve) => setTimeout(resolve, 80));
     const plan = planLesson(analysis, input);
     updateProgress(
       "planning",
       "complete",
-      `Planned ${plan.targetCardCount}-card instructional progression.`
+      `Planned ${plan.targetCardCount}-card instructional progression.`,
     );
 
     updateProgress(
       "cards",
       "in-progress",
-      "Synthesizing narrative cards, literal code blocks, and structured diagrams..."
+      "Synthesizing narrative cards, literal code blocks, and structured diagrams...",
     );
     await new Promise((resolve) => setTimeout(resolve, 100));
     const cards = createCards(plan, analysis, input);
     updateProgress(
       "cards",
       "complete",
-      `Generated ${cards.length} structured lesson cards.`
+      `Generated ${cards.length} structured lesson cards.`,
     );
 
     updateProgress(
       "checks",
       "in-progress",
-      "Formulating grounded comprehension checkpoint with educational explanation..."
+      "Formulating grounded comprehension checkpoint with educational explanation...",
     );
     await new Promise((resolve) => setTimeout(resolve, 80));
     createComprehensionChecks(cards, analysis);
     updateProgress(
       "checks",
       "complete",
-      "Created grounded multiple-choice checkpoint with 1 unambiguous correct answer."
+      "Created grounded multiple-choice checkpoint with 1 unambiguous correct answer.",
     );
 
     const lessonId = input.title
@@ -693,7 +724,7 @@ export async function generateLesson(
     updateProgress(
       "quality",
       "in-progress",
-      "Running deterministic quality, schema, and media audits..."
+      "Running deterministic quality, schema, and media audits...",
     );
     await new Promise((resolve) => setTimeout(resolve, 80));
     const qualityReport = validateQuality(lesson, analysis);
@@ -702,17 +733,17 @@ export async function generateLesson(
       updateProgress(
         "quality",
         "failed",
-        `Validation failed: ${qualityReport.errors.join("; ")}`
+        `Validation failed: ${qualityReport.errors.join("; ")}`,
       );
       throw new Error(
-        `Generated lesson failed quality verification: ${qualityReport.errors.join("; ")}`
+        `Generated lesson failed quality verification: ${qualityReport.errors.join("; ")}`,
       );
     }
 
     updateProgress(
       "quality",
       "complete",
-      `Passed all ${qualityReport.checksPassed.length} quality verification audits.`
+      `Passed all ${qualityReport.checksPassed.length} quality verification audits.`,
     );
 
     if (onProgress) {

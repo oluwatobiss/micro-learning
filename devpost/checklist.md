@@ -179,7 +179,7 @@ Completed and verified the implementation of **Slice 3**:
    - Shared word-count utility (`app/utils/text.ts`) with strict boundaries: minimum 200 words, maximum 10,000 words.
    - Accessible validation feedback associating errors to form fields (`aria-required`, `aria-invalid`, `aria-describedby`, `role="alert"`), autofocusing the first invalid element upon submission failure.
    - Live word count and requirement status counter with visual and aria-live feedback.
-   - "Load Sample Article" action pre-populating a comprehensive software-development article (*Optimistic UI and Mutation Resilience in Modern Web Apps*), keeping the permission checkbox intentionally unconfirmed to require explicit creator acknowledgment.
+   - "Load Sample Article" action pre-populating a comprehensive software-development article (_Optimistic UI and Mutation Resilience in Modern Web Apps_), keeping the permission checkbox intentionally unconfirmed to require explicit creator acknowledgment.
 
 2. **Five-Stage Adaptive Generation Engine (`app/services/generator.ts`):**
    - **Stage 1 (Understanding Source):** Extracts central thesis, section structures, literal code snippets, key terminology, process flows, and comparison points without fabricating facts or citations.
@@ -206,3 +206,43 @@ Completed and verified the implementation of **Slice 3**:
    - Typecheck (`tsc --noEmit`) -> **0 errors**.
    - Production bundle (`npm run build`) -> **Succeeds cleanly** with client and SSR assets.
    - Browser Subagent verified the entire user journey end-to-end at `http://127.0.0.1:5173/studio` across Clean Light, Focused Dark, and Warm Editorial themes.
+
+### Slice 3 Remediation: Creator Studio UX, Rendering, and Workflow Reliability Pass
+
+Completed and verified the remediation of Slice 3 based on visual review and workflow testing:
+
+1. **Symbol & Unicode Encoding Integrity Across System:**
+   - **Root Cause:** In PowerShell piping into WSL, default console codepages silently converted non-ASCII characters into literal ?? symbols.
+   - **Fix:** Enforced UTF-8 encoding across scripts and source files, eliminated mojibake and stray ?? symbols across all buttons, headings, and labels.
+   - Converted key actions and badges to crisp, theme-aware inline SVG icons (document icon for sample loader, checkmark icons for stage completions, warning icons for validation errors).
+   - Standardized typography with proper en-dashes (`from 200–10,000 words`), em-dashes (`Stage 1 — Understanding Source`), and arrows (`→`).
+   - Added automated regression test `Symbol & Unicode Encoding Integrity Audit` to `tests_slice3.mjs`.
+
+2. **Source Input Mobile Layout & Form Usability:**
+   - Updated primary action button label to concise and intuitive **Generate Lesson**.
+   - Added `.labelRow` flexbox container to `SourceInputForm.module.css` to prevent mobile collision between field labels (`Source Article Text`) and helper text (`Markdown & code fences supported`).
+   - Enhanced `.actionBar` layout for mobile: buttons stack vertically with full width and touch targets >= 44px (primary button 48px).
+
+3. **Isolated "Create Another Lesson" Reset Workflow:**
+   - Added `handleCreateAnother` in `app/routes/studio.tsx`:
+     - Clears local draft input, progress tracker, and generation result.
+     - Increments `formResetCounter` so `<SourceInputForm key={formResetCounter} />` re-mounts fresh with completely reset state.
+     - Unchecks permission confirmation, resets word counts and validation errors.
+     - Programmatically smooth-scrolls to top and focuses `#lesson-title-input`.
+     - Preserves all previously saved lessons in `storageService`.
+   - Added automated regression test `Create Another Lesson Reset & Isolation Contract` to `tests_slice3.mjs`.
+
+4. **Generation Review Experience & Card Deck Inspector:**
+   - Header badge updated to clean affirmative state: `Lesson generated successfully` with SVG checkmark.
+   - Quality status computed defensibly as `7/7 Checks Passed` (`100% Conformance`) based on `QualityAuditReport.checksPassed.length / totalChecksCount`.
+   - Card deck inspector:
+     - Collapsed preview strips markdown formatting symbols (`stripMarkdownPreview`) to prevent raw `**` asterisks.
+     - Expanded preview renders rich, formatted markdown and syntax-highlighted code blocks with clipboard copy via `<MarkdownContent />`.
+     - Card type badge displays a single, deduplicated badge (`Overview`, `Concept`, `Process Flow`, or `Checkpoint`), eliminating duplicate `checkpoint checkpoint` labels.
+     - Checkpoint options display distinct SVG icons: checkmark for correct answers and circle for distractors.
+
+5. **Automated Verification:**
+   - `npm test`: **18/18 tests passing`** (6 reader tests + 12 Slice 3 tests).
+   - `npm run typecheck` (`tsc --noEmit`): **0 errors**.
+   - `npm run build`: Production build passes cleanly for both SPA and SSR targets.
+   - Browser subagent verified full end-to-end journey on `http://127.0.0.1:5173/studio`.

@@ -2,11 +2,25 @@ import React, { useState } from "react";
 import { Link } from "react-router";
 import type { GenerationResult } from "../../types/generator";
 import { storageService } from "../../services/storage";
+import { MarkdownContent } from "../MarkdownContent";
 import styles from "./GenerationResultReview.module.css";
 
 interface GenerationResultReviewProps {
   result: GenerationResult;
   onCreateAnother: () => void;
+}
+
+function stripMarkdownPreview(text: string, maxLength = 160): string {
+  const stripped = text
+    .replace(/```[\s\S]*?```/g, "[Code demonstration]")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/\*([^*]+)\*/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/#+\s+/g, "")
+    .replace(/\n+/g, " ")
+    .trim();
+  if (stripped.length <= maxLength) return stripped;
+  return stripped.slice(0, maxLength).trim() + "...";
 }
 
 export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
@@ -16,6 +30,9 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
   const { lesson, qualityReport, sourceAnalysis } = result;
   const [isSaved, setIsSaved] = useState(false);
   const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
+
+  const totalChecks = qualityReport.totalChecksCount || 7;
+  const passedCount = qualityReport.checksPassed.length;
 
   const handleSaveToReader = () => {
     storageService.saveLesson(lesson);
@@ -32,6 +49,14 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
     downloadAnchor.remove();
   };
 
+  const getCardTypeLabel = (type: string, hasVisual?: boolean) => {
+    if (type === "checkpoint") return "Checkpoint";
+    if (hasVisual) return "Interactive Diagram";
+    if (type === "example") return "Code Example";
+    if (type === "comparison") return "Comparison";
+    return "Narrative";
+  };
+
   return (
     <div className={styles.container}>
       {/* Hero Header */}
@@ -39,13 +64,51 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
         <div className={styles.heroHeader}>
           <div>
             <div className={styles.successBadge}>
-              <span aria-hidden="true">?</span> Generation Complete &amp; Quality Verified
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="3.5 8.5 6.5 11.5 12.5 5" />
+              </svg>
+              <span>Lesson generated successfully</span>
             </div>
             <h1 id="result-title" className={styles.lessonTitle}>{lesson.title}</h1>
             <p className={styles.attribution}>
               Synthesized from original material by <strong>{lesson.author}</strong>
               {lesson.sourceUrl && (
-                <> ? <a href={lesson.sourceUrl} target="_blank" rel="noopener noreferrer" className={styles.sourceLink}>Original Source ?</a></>
+                <>
+                  {" • "}
+                  <a
+                    href={lesson.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.sourceLink}
+                  >
+                    <span>Original Source</span>
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                      <polyline points="15 3 21 3 21 9" />
+                      <line x1="10" y1="14" x2="21" y2="3" />
+                    </svg>
+                  </a>
+                </>
               )}
             </p>
           </div>
@@ -65,10 +128,11 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
             <span className={styles.statValue}>{sourceAnalysis.totalWordCount.toLocaleString()}</span>
           </div>
           <div className={styles.statItem}>
-            <span className={styles.statLabel}>Quality Score</span>
+            <span className={styles.statLabel}>Quality Status</span>
             <span className={styles.statValue} style={{ color: "var(--feedback-success)" }}>
-              {qualityReport.groundingScore}%
+              {passedCount}/{totalChecks} Checks
             </span>
+            <span className={styles.statSubtext}>Deterministic verification</span>
           </div>
         </div>
 
@@ -79,7 +143,20 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
             className={styles.primaryAction}
             id="save-preview-btn"
           >
-            <span>{isSaved ? "Saved to Reader ?" : "Save Lesson to Reader"}</span>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+            </svg>
+            <span>{isSaved ? "Saved to Reader ✓" : "Save Lesson to Reader"}</span>
           </button>
           {isSaved && (
             <Link
@@ -87,7 +164,7 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
               className={styles.primaryAction}
               style={{ backgroundColor: "var(--feedback-success)" }}
             >
-              <span>Launch Reader Player ?</span>
+              <span>Launch Reader Player →</span>
             </Link>
           )}
           <button
@@ -96,7 +173,22 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
             className={styles.secondaryAction}
             id="download-json-btn"
           >
-            <span>?? Export Lesson JSON</span>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            <span>Export Lesson JSON</span>
           </button>
           <button
             type="button"
@@ -104,7 +196,21 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
             className={styles.secondaryAction}
             id="create-another-btn"
           >
-            <span>? Create Another Lesson</span>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="1 4 1 10 7 10" />
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+            </svg>
+            <span>Create Another Lesson</span>
           </button>
         </div>
       </section>
@@ -113,25 +219,72 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
       <section className={styles.sectionCard} aria-labelledby="quality-title">
         <div className={styles.sectionHeader}>
           <h2 id="quality-title" className={styles.sectionTitle}>
-            <span aria-hidden="true">??</span> Stage 5 ? Deterministic Quality Audit
+            <span>Stage 5 — Deterministic Quality Audit</span>
           </h2>
           <span className={styles.auditScore}>
-            Passed {qualityReport.checksPassed.length} of {qualityReport.checksPassed.length} Checks
+            Passed {passedCount} of {totalChecks} Checks
           </span>
         </div>
         <div className={styles.auditList}>
           {qualityReport.checksPassed.map((check, idx) => (
             <div key={idx} className={styles.auditItem}>
-              <span className={styles.auditIcon} aria-hidden="true">?</span>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={styles.auditIconPass}
+                aria-hidden="true"
+              >
+                <polyline points="3.5 8.5 6.5 11.5 12.5 5" />
+              </svg>
               <span>{check}</span>
             </div>
           ))}
-          {qualityReport.warnings.length > 0 && (
-            <div className={styles.auditItem} style={{ color: "var(--feedback-warning)" }}>
-              <span style={{ fontWeight: 700 }}>?</span>
-              <span>Audit Note: {qualityReport.warnings.join("; ")}</span>
+          {qualityReport.warnings.map((warn, idx) => (
+            <div key={`warn-${idx}`} className={styles.auditItem} style={{ color: "var(--feedback-warning)" }}>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={styles.auditIconWarn}
+                aria-hidden="true"
+              >
+                <circle cx="8" cy="8" r="7" />
+                <line x1="8" y1="5" x2="8" y2="9" />
+                <line x1="8" y1="12" x2="8.01" y2="12" />
+              </svg>
+              <span>Audit Note: {warn}</span>
             </div>
-          )}
+          ))}
+          {qualityReport.errors.map((err, idx) => (
+            <div key={`err-${idx}`} className={styles.auditItem} style={{ color: "var(--feedback-danger)" }}>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <line x1="4" y1="4" x2="12" y2="12" />
+                <line x1="12" y1="4" x2="4" y2="12" />
+              </svg>
+              <span>Audit Failure: {err}</span>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -139,16 +292,32 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
       <section className={styles.sectionCard} aria-labelledby="deck-title">
         <div className={styles.sectionHeader}>
           <h2 id="deck-title" className={styles.sectionTitle}>
-            <span aria-hidden="true">??</span> Generated Lesson Card Deck ({lesson.cards.length} Cards)
+            <span>Generated Lesson Card Deck ({lesson.cards.length} Cards)</span>
           </h2>
-          <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-            Pedagogical progression: {lesson.cards.map(c => c.type).join(" ? ")}
-          </span>
+        </div>
+
+        {/* Pedagogical flow */}
+        <div className={styles.progressionBar}>
+          <span className={styles.progressionLabel}>Pedagogical flow:</span>
+          <div className={styles.progressionSteps}>
+            {lesson.cards.map((c, idx) => (
+              <React.Fragment key={c.id}>
+                <span className={styles.progressionPill}>
+                  {getCardTypeLabel(c.type, Boolean(c.visualMedia))}
+                </span>
+                {idx < lesson.cards.length - 1 && (
+                  <span className={styles.progressionArrow} aria-hidden="true">→</span>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
         </div>
 
         <div className={styles.cardList}>
           {lesson.cards.map((card, idx) => {
             const isExpanded = expandedCardId === card.id;
+            const badgeLabel = getCardTypeLabel(card.type, Boolean(card.visualMedia));
+
             return (
               <div key={card.id} className={styles.deckCard}>
                 <div className={styles.deckCardHeader}>
@@ -159,49 +328,48 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
                     <span className={styles.deckCardTitle}>{card.title}</span>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <span className={styles.cardTypeBadge}>{card.type}</span>
-                    {card.visualMedia && <span className={styles.cardTypeBadge}>diagram spec</span>}
-                    {card.checkpoint && <span className={styles.cardTypeBadge}>checkpoint</span>}
+                    <span className={styles.cardTypeBadge}>{badgeLabel}</span>
                     <button
                       type="button"
                       onClick={() => setExpandedCardId(isExpanded ? null : card.id)}
-                      style={{
-                        fontSize: "0.8125rem",
-                        color: "var(--accent-primary)",
-                        padding: "0.2rem 0.5rem",
-                        fontWeight: 600
-                      }}
+                      className={styles.inspectBtn}
                       aria-expanded={isExpanded}
                     >
-                      {isExpanded ? "Collapse ?" : "Inspect ?"}
+                      <span>{isExpanded ? "Collapse" : "Inspect"}</span>
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        {isExpanded ? (
+                          <polyline points="18 15 12 9 6 15" />
+                        ) : (
+                          <polyline points="6 9 12 15 18 9" />
+                        )}
+                      </svg>
                     </button>
                   </div>
                 </div>
 
                 {!isExpanded && (
                   <p className={styles.cardSnippet}>
-                    {card.content.slice(0, 180)}...
+                    {stripMarkdownPreview(card.content)}
                   </p>
                 )}
 
                 {isExpanded && (
-                  <div style={{ marginTop: "0.75rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                    <div style={{
-                      fontFamily: "var(--font-mono)",
-                      fontSize: "0.8125rem",
-                      whiteSpace: "pre-wrap",
-                      padding: "0.75rem",
-                      background: "var(--bg-surface)",
-                      borderRadius: "var(--radius-sm)",
-                      border: "1px solid var(--border-color)",
-                      color: "var(--text-secondary)"
-                    }}>
-                      {card.content}
-                    </div>
+                  <div className={styles.expandedContent}>
+                    <MarkdownContent content={card.content} />
 
                     {card.checkpoint && (
-                      <div className={styles.cardCheckDetails}>
-                        <div style={{ fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.375rem" }}>
+                      <div className={styles.checkpointBox}>
+                        <div className={styles.checkpointQuestion}>
                           Check Question: {card.checkpoint.question}
                         </div>
                         {card.checkpoint.options.map((opt) => (
@@ -209,12 +377,39 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
                             key={opt.id}
                             className={`${styles.checkOption} ${opt.isCorrect ? styles.checkOptionCorrect : ""}`}
                           >
-                            <span>{opt.isCorrect ? "? (Correct)" : "?"}</span>
-                            <span>{opt.text}</span>
+                            {opt.isCorrect ? (
+                              <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 16 16"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                aria-hidden="true"
+                              >
+                                <polyline points="3.5 8.5 6.5 11.5 12.5 5" />
+                              </svg>
+                            ) : (
+                              <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 16 16"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                aria-hidden="true"
+                              >
+                                <circle cx="8" cy="8" r="6" />
+                              </svg>
+                            )}
+                            <span>{opt.text} {opt.isCorrect ? "(Correct)" : ""}</span>
                           </div>
                         ))}
-                        <div style={{ marginTop: "0.5rem", color: "var(--text-muted)", fontStyle: "italic" }}>
-                          Explanation: {card.checkpoint.explanation}
+                        <div className={styles.checkpointExplanation}>
+                          <strong>Explanation:</strong>
+                          <MarkdownContent content={card.checkpoint.explanation} />
                         </div>
                       </div>
                     )}
@@ -230,12 +425,12 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
       {lesson.keyTakeaways && lesson.keyTakeaways.length > 0 && (
         <section className={styles.sectionCard} aria-labelledby="takeaways-title">
           <h2 id="takeaways-title" className={styles.sectionTitle} style={{ marginBottom: "1rem" }}>
-            <span aria-hidden="true">??</span> Lesson Completion Takeaways ({lesson.keyTakeaways.length})
+            <span>Lesson Completion Takeaways ({lesson.keyTakeaways.length})</span>
           </h2>
           <ul className={styles.takeawaysList}>
             {lesson.keyTakeaways.map((takeaway, idx) => (
               <li key={idx} className={styles.takeawayItem}>
-                <span className={styles.takeawayBullet}>?</span>
+                <span className={styles.takeawayBullet} aria-hidden="true">•</span>
                 <span>{takeaway}</span>
               </li>
             ))}
@@ -260,7 +455,7 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
 export interface Slice4HandoffPayload {
   lesson: Lesson;           // id: "${lesson.id}", ${lesson.cards.length} cards, schema v${lesson.version || 1}
   sourceAnalysis: SourceAnalysis; // ${sourceAnalysis.sections.length} sections, ${sourceAnalysis.keyTerms.length} terms
-  qualityReport: QualityAuditReport; // Passed all ${qualityReport.checksPassed.length} checks (score: ${qualityReport.groundingScore}%)
+  qualityReport: QualityAuditReport; // Passed ${passedCount}/${totalChecks} checks (${qualityReport.groundingScore}% conformance)
   provider: "${result.provider}";
 }`}
         </pre>
