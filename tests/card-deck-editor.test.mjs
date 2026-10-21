@@ -4,11 +4,11 @@ import assert from "node:assert/strict";
 import {
   validateEditedLesson,
   recalculateEstimatedMinutes,
-} from "./app/utils/editorValidation.ts";
-import { storageService } from "./app/services/storage.ts";
-import { draftService } from "./app/services/draft.ts";
-import { SAMPLE_LESSON } from "./app/services/sampleLesson.ts";
-import { REACT_RENDER_LOOP_SPEC } from "./app/types/media.ts";
+} from "../app/utils/editorValidation.ts";
+import { storageService } from "../app/services/storage.ts";
+import { draftService } from "../app/services/draft.ts";
+import { SAMPLE_LESSON } from "../app/services/sampleLesson.ts";
+import { REACT_RENDER_LOOP_SPEC } from "../app/types/media.ts";
 
 // In-memory mock for localStorage in Node test environment
 const mockStorage = new Map();

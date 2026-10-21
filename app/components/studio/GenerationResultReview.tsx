@@ -185,7 +185,7 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
               <path d="M12 20h9" />
               <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
             </svg>
-            <span>Customize in Card Deck Editor ✏️</span>
+            <span>Open Card Editor ✏️</span>
           </button>
           <button
             type="button"
@@ -348,7 +348,7 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
         </div>
       </section>
 
-      {/* Card Deck Breakdown (Slice 3 Read-Only Inspection) */}
+      {/* Card Deck Breakdown */}
       <section className={styles.sectionCard} aria-labelledby="deck-title">
         <div className={styles.sectionHeader}>
           <h2 id="deck-title" className={styles.sectionTitle}>
@@ -540,37 +540,36 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
         </section>
       )}
 
-      {/* Slice 4 Handoff Contract Card */}
-      <section className={styles.handoffBanner} aria-labelledby="handoff-title">
+      {/* Next Step: Customize Lesson */}
+      <section
+        className={styles.handoffBanner}
+        aria-labelledby="customize-title"
+      >
         <div className={styles.handoffHeader}>
-          <span className={styles.handoffBadge}>Handoff Contract</span>
-          <h2 id="handoff-title" className={styles.handoffTitle}>
-            Ready for Slice 4: Card Deck Editor
+          <span className={styles.handoffBadge}>Next Step</span>
+          <h2 id="customize-title" className={styles.handoffTitle}>
+            Your lesson is ready to customize
           </h2>
         </div>
         <p className={styles.handoffText}>
-          Slice 3 successfully produced a fully structured, validated, and
-          grounded <code>Lesson</code> object. The downstream Slice 4 Deck
-          Editor consumes this typed payload without needing knowledge of
-          generation internals or provider mechanics.
+          Review your lesson cards, refine the content, and preview the reading
+          experience before saving it to your lesson library.
         </p>
-        <pre className={styles.codeBlock}>
-          {`// Slice 4 Ingestion Contract
-export interface Slice4HandoffPayload {
-  lesson: Lesson;           // id: "${lesson.id}", ${lesson.cards.length} cards, schema v${lesson.version || 1}
-  sourceAnalysis: SourceAnalysis; // ${sourceAnalysis.sections.length} sections, ${sourceAnalysis.keyTerms.length} terms
-  qualityReport: QualityAuditReport; // Passed ${passedCount}/${totalChecks} checks (${qualityReport.groundingScore}% conformance)
-  provider: "${result.provider}";
-}`}
-        </pre>
-        <div style={{ marginTop: "1.25rem", display: "flex", gap: "0.75rem" }}>
+        <div
+          style={{
+            marginTop: "1.25rem",
+            display: "flex",
+            gap: "0.75rem",
+            flexWrap: "wrap",
+          }}
+        >
           <button
             type="button"
             onClick={handleOpenEditor}
             className={styles.primaryAction}
             id="handoff-open-editor-btn"
           >
-            <span>Open in Card Deck Editor →</span>
+            <span>Open Card Editor →</span>
           </button>
         </div>
       </section>

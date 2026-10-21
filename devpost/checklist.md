@@ -331,3 +331,52 @@ Completed and verified the implementation of **Slice 4: Card Deck Editor**:
    - Typecheck (`npm run typecheck`): **0 errors**.
    - Production build (`npm run build`): **Built cleanly** for client SPA and SSR.
    - Browser subagent verified full end-to-end workflow: 3-pane layout, editing title, adding card, reordering, saving, theme switching, mobile responsiveness, and publishing to reader.
+
+### Slice 4 Final Remediation: UX Polish, Workflow Clarity, and Test Organization
+
+Completed and verified the remediation pass on the Card Deck Editor and test suite:
+
+1. **Elimination of Implementation Jargon from Creator Experience:**
+   - Replaced internal "HANDOFF CONTRACT / Ready for Slice 4" panel with clean creator-facing copy:
+     - **Heading:** "Your lesson is ready to customize"
+     - **Description:** "Review your lesson cards, refine the content, and preview the reading experience before saving it to your lesson library."
+     - **Action:** "Open Card Editor →"
+   - Removed code blocks, internal slice numbering, and provider diagnostics from normal creator view (preserved in developer-facing types/code).
+   - Updated studio action button to "Open Card Editor ✏️".
+
+2. **Accurate Terminology for Save, Export, and Reader Navigation:**
+   - Replaced "Publish / View as Reader" with **"Save & View in Reader →"** to accurately reflect local storage persistence rather than claiming public distribution.
+   - Updated primary action buttons:
+     - **Save Lesson:** Persists valid draft to the lesson library.
+     - **Export JSON:** Downloads validated `${lesson.id}.json` file.
+     - **Save & View in Reader:** Validates and saves draft, then opens in the Reader Player.
+   - Updated feedback toasts to "Lesson saved to library ✓" and validation alerts to "Cannot save & view lesson:".
+
+3. **Mobile Editor Header and Action Hierarchy:**
+   - Made header layout compact and responsive: title wraps naturally or clamps cleanly without truncating essential context.
+   - Simplified metadata into a clean single line (`By Author • 6 Cards • Est. read time`).
+   - Re-architected action layout on mobile: "Save & View in Reader →" takes prominent primary weight, "Save Lesson" secondary, and "Export JSON" compact footprint.
+   - Refined sticky positioning: `headerBar` uses `position: static` on mobile to prevent consuming 40% of the screen, while the slim segmented nav (`Cards`, `Edit Card`, `Live Preview`) remains stickily reachable at 38–40px height.
+
+4. **Card-Lock and Reorder Control Alignment:**
+   - Redesigned card outline items into a consistent 2-row layout with a trailing action group:
+     - **Row 1:** `#index` and card title (taking full width with tooltip).
+     - **Row 2:** Card type badge (`Narrative`, `Checkpoint`, etc.), dedicated `🔒 Locked` badge with SVG lock icon, and `⚠️ Error` badge.
+     - **Trailing Group:** Move Up (`▲`) and Move Down (`▼`) controls grouped in a fixed, 28px-wide vertical column with identical alignment across all cards whether locked or unlocked.
+   - Added meaningful accessible labels (`Move card 1 up: Title`, `Locked against editing`).
+   - Retained card lock protection: locking disables input fields while leaving unlock and navigation controls accessible; unlocking restores full editing without mutating content.
+
+5. **Test Organization & Cleanup:**
+   - Reorganized all test suites into dedicated `tests/` directory:
+     - `tests/reader.test.mjs` (was `tests_reader.mjs`)
+     - `tests/generation.test.mjs` (was `tests_slice3.mjs`)
+     - `tests/card-deck-editor.test.mjs` (was `tests_slice4.mjs`)
+   - Updated `package.json` test script:
+     `"test": "node --experimental-strip-types --test tests/reader.test.mjs tests/generation.test.mjs tests/card-deck-editor.test.mjs"`
+   - Removed obsolete root-level test files (`tests_reader.mjs`, `tests_slice3.mjs`, `tests_slice4.mjs`) and obsolete scratch file `test.txt`.
+
+6. **Verification Results:**
+   - `npm test`: **26/26 tests passing** (0 failures, 1.45s).
+   - `npm run typecheck` (`tsc --noEmit`): **0 errors**.
+   - `npm run build`: Production build passes cleanly in 5.88s.
+   - Browser subagent verified desktop and mobile views, lock alignment, theme switching across Clean Light, Warm Editorial, and Focused Dark, and live Reader Player navigation.

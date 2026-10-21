@@ -1,7 +1,7 @@
 import {
   validateMediaSpec,
   REACT_RENDER_LOOP_SPEC,
-} from "./app/types/media.ts";
+} from "../app/types/media.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 
@@ -30,8 +30,8 @@ import {
   DEFAULT_LESSONS,
   SAMPLE_LESSON,
   REACT_STATE_LESSON,
-} from "./app/services/sampleLesson.ts";
-import { progressService } from "./app/services/progress.ts";
+} from "../app/services/sampleLesson.ts";
+import { progressService } from "../app/services/progress.ts";
 
 test("1. Quiz Quality and Content Audit", () => {
   assert.equal(

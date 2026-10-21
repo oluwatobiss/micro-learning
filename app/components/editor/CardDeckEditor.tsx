@@ -7,17 +7,16 @@ import type {
   QuizOption,
   CardType,
 } from "../../types/lesson";
-import type { Slice4HandoffPayload } from "../../types/generator";
 import type { CardDeckEditorProps } from "../../types/editor";
-import { storageService } from "../../services/storage";
-import { draftService } from "../../services/draft";
+import { storageService } from "../../services/storage.ts";
+import { draftService } from "../../services/draft.ts";
 import {
   validateEditedLesson,
   recalculateEstimatedMinutes,
-} from "../../utils/editorValidation";
+} from "../../utils/editorValidation.ts";
 import { LessonCard as LessonCardComponent } from "../LessonCard";
 import { CheckpointCard as CheckpointCardComponent } from "../CheckpointCard";
-import { countWords } from "../../utils/text";
+import { countWords } from "../../utils/text.ts";
 import styles from "./CardDeckEditor.module.css";
 
 type MobileTab = "cards" | "edit" | "preview";
@@ -369,7 +368,7 @@ export const CardDeckEditor: React.FC<CardDeckEditorProps> = ({
     storageService.saveLesson(lesson);
     draftService.clearDraft(lesson.id);
     setHasUnsavedChanges(false);
-    setSaveToast("Lesson saved to reader storage ✓");
+    setSaveToast("Lesson saved to library ✓");
     setTimeout(() => setSaveToast(null), 3000);
     if (onSave) {
       onSave(lesson);
@@ -389,8 +388,8 @@ export const CardDeckEditor: React.FC<CardDeckEditorProps> = ({
     downloadAnchor.remove();
   };
 
-  // Publish / View in Reader
-  const handlePublish = () => {
+  // Save & View in Reader
+  const handleSaveAndView = () => {
     if (!validation.isValid) {
       setShowValidationErrors(true);
       return;
@@ -438,7 +437,7 @@ export const CardDeckEditor: React.FC<CardDeckEditorProps> = ({
 
   return (
     <div className={styles.editorContainer}>
-      {/* Sticky Top Header Bar */}
+      {/* Top Header Bar */}
       <header className={styles.headerBar}>
         <div className={styles.headerTopRow}>
           <div className={styles.headerLeft}>
@@ -465,15 +464,17 @@ export const CardDeckEditor: React.FC<CardDeckEditorProps> = ({
               <span>Studio</span>
             </button>
 
-            <input
-              type="text"
-              value={lesson.title}
-              onChange={(e) => handleTitleChange(e.target.value)}
-              className={styles.lessonTitleInput}
-              aria-label="Lesson Title"
-              placeholder="Lesson Title"
-              id="lesson-title-editor-input"
-            />
+            <div className={styles.titleWrapper}>
+              <input
+                type="text"
+                value={lesson.title}
+                onChange={(e) => handleTitleChange(e.target.value)}
+                className={styles.lessonTitleInput}
+                aria-label="Lesson Title"
+                placeholder="Lesson Title"
+                id="lesson-title-editor-input"
+              />
+            </div>
 
             <span
               className={`${styles.saveStatusBadge} ${
@@ -511,7 +512,7 @@ export const CardDeckEditor: React.FC<CardDeckEditorProps> = ({
               type="button"
               onClick={handleSaveToStorage}
               className={`${styles.actionBtn} ${styles.primaryActionBtn}`}
-              title="Save changes to reader storage"
+              title="Save changes to your lesson library"
               id="save-draft-btn"
             >
               <svg
@@ -536,7 +537,7 @@ export const CardDeckEditor: React.FC<CardDeckEditorProps> = ({
               type="button"
               onClick={handleExportJson}
               className={styles.actionBtn}
-              title="Export lesson JSON"
+              title="Export lesson JSON file"
               id="export-json-btn"
             >
               <svg
@@ -559,11 +560,12 @@ export const CardDeckEditor: React.FC<CardDeckEditorProps> = ({
 
             <button
               type="button"
-              onClick={handlePublish}
-              className={`${styles.actionBtn} ${styles.publishActionBtn}`}
-              id="publish-reader-btn"
+              onClick={handleSaveAndView}
+              className={`${styles.actionBtn} ${styles.readerActionBtn}`}
+              id="save-view-reader-btn"
+              title="Save lesson and open in Reader Player"
             >
-              <span>Publish / View as Reader →</span>
+              <span>Save & View in Reader →</span>
             </button>
           </div>
         </div>
@@ -631,8 +633,8 @@ export const CardDeckEditor: React.FC<CardDeckEditorProps> = ({
             <line x1="12" y1="16" x2="12.01" y2="16" />
           </svg>
           <div>
-            <strong>Cannot publish lesson:</strong> Please resolve the following
-            errors:
+            <strong>Cannot save & view lesson:</strong> Please resolve the
+            following errors:
             <ul style={{ margin: "0.4rem 0 0 1.2rem", padding: 0 }}>
               {validation.errors.map((err, i) => (
                 <li key={i}>{err}</li>
@@ -650,6 +652,7 @@ export const CardDeckEditor: React.FC<CardDeckEditorProps> = ({
           className={`${styles.segmentBtn} ${
             mobileTab === "cards" ? styles.segmentBtnActive : ""
           }`}
+          aria-pressed={mobileTab === "cards"}
         >
           📋 Cards ({lesson.cards.length})
         </button>
@@ -659,6 +662,7 @@ export const CardDeckEditor: React.FC<CardDeckEditorProps> = ({
           className={`${styles.segmentBtn} ${
             mobileTab === "edit" ? styles.segmentBtnActive : ""
           }`}
+          aria-pressed={mobileTab === "edit"}
         >
           ✏️ Edit Card
         </button>
@@ -668,6 +672,7 @@ export const CardDeckEditor: React.FC<CardDeckEditorProps> = ({
           className={`${styles.segmentBtn} ${
             mobileTab === "preview" ? styles.segmentBtnActive : ""
           }`}
+          aria-pressed={mobileTab === "preview"}
         >
           👁️ Live Preview
         </button>
@@ -714,14 +719,15 @@ export const CardDeckEditor: React.FC<CardDeckEditorProps> = ({
                   aria-label={`Select Card ${idx + 1}: ${card.title}`}
                   aria-current={isSelected ? "true" : undefined}
                 >
-                  <div className={styles.itemInfo}>
+                  {/* Left Column: Title Row + Meta Row */}
+                  <div className={styles.itemMainCol}>
                     <div className={styles.itemTitleRow}>
                       <span className={styles.itemNumber}>#{idx + 1}</span>
-                      <span className={styles.itemTitleText}>{card.title}</span>
-                      {card.isLocked && <span title="Card is locked">🔒</span>}
-                      {hasCardError && <span title="Contains errors">⚠️</span>}
+                      <span className={styles.itemTitleText} title={card.title}>
+                        {card.title}
+                      </span>
                     </div>
-                    <div className={styles.itemBadgeRow}>
+                    <div className={styles.itemMetaRow}>
                       <span
                         className={`${styles.itemBadge} ${
                           isSelected ? styles.itemBadgeActive : ""
@@ -729,10 +735,53 @@ export const CardDeckEditor: React.FC<CardDeckEditorProps> = ({
                       >
                         {getCardTypeLabel(card.type)}
                       </span>
+                      {card.isLocked && (
+                        <span
+                          className={styles.lockBadge}
+                          title="Locked against editing"
+                          aria-label="Locked against editing"
+                        >
+                          <svg
+                            width="10"
+                            height="10"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
+                            <rect
+                              x="3"
+                              y="11"
+                              width="18"
+                              height="11"
+                              rx="2"
+                              ry="2"
+                            />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                          </svg>
+                          <span>Locked</span>
+                        </span>
+                      )}
+                      {hasCardError && (
+                        <span
+                          className={styles.errorBadge}
+                          title="Contains validation errors"
+                          aria-label="Contains validation errors"
+                        >
+                          <span>⚠️ Error</span>
+                        </span>
+                      )}
                     </div>
                   </div>
 
-                  <div className={styles.outlineItemActions}>
+                  {/* Right Trailing Action Group: Fixed Reorder Buttons */}
+                  <div
+                    className={styles.reorderGroup}
+                    aria-label={`Reorder controls for card ${idx + 1}`}
+                  >
                     <button
                       type="button"
                       onClick={(e) => {
@@ -741,10 +790,22 @@ export const CardDeckEditor: React.FC<CardDeckEditorProps> = ({
                       }}
                       disabled={idx === 0}
                       className={styles.reorderBtn}
-                      aria-label={`Move card ${idx + 1} up`}
+                      aria-label={`Move card ${idx + 1} up: ${card.title}`}
                       title="Move up"
                     >
-                      ▲
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <polyline points="18 15 12 9 6 15" />
+                      </svg>
                     </button>
                     <button
                       type="button"
@@ -754,10 +815,22 @@ export const CardDeckEditor: React.FC<CardDeckEditorProps> = ({
                       }}
                       disabled={idx === lesson.cards.length - 1}
                       className={styles.reorderBtn}
-                      aria-label={`Move card ${idx + 1} down`}
+                      aria-label={`Move card ${idx + 1} down: ${card.title}`}
                       title="Move down"
                     >
-                      ▼
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <polyline points="6 9 12 15 18 9" />
+                      </svg>
                     </button>
                   </div>
                 </div>
@@ -813,20 +886,81 @@ export const CardDeckEditor: React.FC<CardDeckEditorProps> = ({
                     activeCard.isLocked ? styles.lockedActive : ""
                   }`}
                   aria-pressed={activeCard.isLocked}
+                  aria-label={
+                    activeCard.isLocked
+                      ? "Unlock card for editing"
+                      : "Lock card wording against editing"
+                  }
+                  title={
+                    activeCard.isLocked
+                      ? "Unlock card for editing"
+                      : "Lock card wording against editing"
+                  }
                 >
-                  {activeCard.isLocked ? "🔒 Locked" : "🔓 Lock Wording"}
+                  {activeCard.isLocked ? (
+                    <>
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <rect
+                          x="3"
+                          y="11"
+                          width="18"
+                          height="11"
+                          rx="2"
+                          ry="2"
+                        />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                      </svg>
+                      <span>Locked</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <rect
+                          x="3"
+                          y="11"
+                          width="18"
+                          height="11"
+                          rx="2"
+                          ry="2"
+                        />
+                        <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+                      </svg>
+                      <span>Lock Wording</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>
 
             {/* Lock Notice */}
             {activeCard.isLocked && (
-              <div className={styles.cardLockedNotice}>
+              <div className={styles.cardLockedNotice} role="status">
                 <span>🔒 This card is locked against accidental edits.</span>
                 <button
                   type="button"
                   onClick={() => handleToggleLock(activeCard.id)}
                   className={styles.unlockActionBtn}
+                  aria-label="Unlock card to edit content"
                 >
                   Unlock to Edit
                 </button>
@@ -976,7 +1110,7 @@ export const CardDeckEditor: React.FC<CardDeckEditorProps> = ({
                           readOnly
                         }
                         className={styles.removeOptionBtn}
-                        aria-label="Remove option"
+                        aria-label={`Remove option ${["A", "B", "C", "D"][optIdx]}`}
                         title="Remove option"
                       >
                         ✕
