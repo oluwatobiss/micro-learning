@@ -39,7 +39,7 @@ Build mode: fast
       Learner check: Navigate to `/studio`, click "Load Sample Article", verify the validation checkmarks, click "Generate Lesson", and watch the 5 extraction stages complete.
       Commit: `Add creator input validation and 5-stage adaptive extraction engine`
 
-- [ ] **4. Creator Studio Card Deck Editor (Edit, Reorder, Lock, & Publish to Live Reader)**
+- [x] **4. Creator Studio Card Deck Editor (Edit, Reorder, Lock, & Publish to Live Reader)**
       Becomes usable: The complete visual card deck editor! The creator can edit headlines and body text, reorder cards up/down, change card types, lock approved wording against regeneration, edit quiz questions/options/explanations, preview desktop/mobile, and click "Publish / View as Reader", which saves to `localStorage` and opens the live lesson in the reader.
       Why now: Closes the final loop of the product: Create once -> transform -> edit -> publish -> learn. The creator has complete editorial control before publishing.
       PRD ref: `prd.md > 4. Creator Studio Editor & Polish`, `prd.md > The Core Journey` (steps 4-5)
@@ -51,26 +51,47 @@ Build mode: fast
 
 ## Hands-on Checkpoints
 
-- [ ] Early usable behavior explored — after Slice 2 (the complete Reader Player with grounded checkpoint and 3 themes)
-- [ ] Final kick-the-tires exploration and feedback completed — after Slice 4 (the full Create -> Transform -> Edit -> Publish -> Learn loop)
+- [x] Early usable behavior explored — after Slice 2 (the complete Reader Player with grounded checkpoint and 3 themes)
+- [x] Final kick-the-tires exploration and feedback completed — after Slice 4 (the full Create -> Transform -> Edit -> Publish -> Learn loop)
 
 ## Final Review
 
-- [ ] Final review complete — feedback resolved and learner confirms ready to ship
+- [ ] Final review complete — all technical verification and feedback remediations completed; awaiting learner final sign-off confirming ready to ship
 
 ## Code Tour and App Map
 
-- [ ] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
-- [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
-- [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
+- [x] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
+- [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate (awaiting learner reflection)
+- [x] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
 
-Activity and evidence: not established
-Route and stops: not established
-Edit outcome: not established
-Reflection: not established
-Activity mode: not established
+Activity and evidence: Verified end-to-end core journey in browser, generated interactive `devpost/app-map.html` (29KB self-contained guide), authored code tour and practice activity.
+Route and stops: / -> /studio -> 5-Stage Adaptive Generation Engine -> /editor/:id -> /lessons/:id -> LessonCompletion
+Edit outcome: Verified live in browser with dark/light theme switching, component filtering, and quality audit extension exercise.
+Reflection: Awaiting learner confirmation on transfer reflection.
+Activity mode: Interactive app map & project-grounded extension activity.
 
 ## Revisions
+
+### Final Product Review, Code Tour, and Hackathon Readiness
+
+- **Date:** October 22, 2026
+- **Status:** Verified & Complete
+- **Scope & Implementation:**
+  1. **Core User Journey Verification:**
+     - Verified end-to-end journey in browser: Reader Landing (/) -> Creator Studio (/studio) -> 5-Stage Adaptive Generation Engine -> Generation Review -> Card Deck Editor (/editor/:id) -> Save & View in Reader -> Reader Player (/lessons/:id) -> Comprehension Checkpoint -> Lesson Completion Summary.
+     - Confirmed lesson library persistence across reloads (microlearning_lessons_v3) and draft isolation (microlearning_editor_draft_{id}).
+     - Confirmed theme fidelity across Clean Light, Focused Dark, and Warm Editorial.
+  2. **Technical Verification:**
+     - `npm test`: **26/26 tests passing** with 0 warnings and clean output.
+     - `npm run typecheck` (`tsc --noEmit`): **0 errors**.
+     - `npm run build` (`react-router build`): Built production bundle cleanly for client SPA and SSR.
+  3. **Application Map (`devpost/app-map.html`):**
+     - Authored and verified standalone, self-contained interactive developer guide (29 KB).
+     - Includes Route Map, Principal Component Catalog, Data Contracts (Lesson, LessonCard, CheckpointData, MediaSpec), 5-Stage Generation Pipeline, Storage Isolation Matrix, Developer Source Code Tour, and Hands-on Practice Activity.
+     - Inspected and verified in browser with responsive layout, instant client search filtering, and dark/light theme switching.
+  4. **Developer Code Tour & Practice Activity:**
+     - Documented architectural roadmap across the 6 key files: generator.ts, CardDeckEditor.tsx, ReaderPlayer.tsx, lesson.ts, storage.ts/draft.ts, and InstructionalDiagram.tsx.
+     - Provided project-grounded practice exercise: Extending Stage 5 Quality Audit with a Card Readability & Word Density check.
 
 ### Checkpoint 1 Follow-up: Responsive Illustration Fixes & Instructional Media Architecture
 

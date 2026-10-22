@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MicroLearning Studio — Application Map & Architectural Guide</title>
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --surface: #131b26;
+      --elevated: #1a2433;
+      --border: #243247;
+      --border-strong: #334460;
+      --text: #f0f4fc;
+      --muted: #94a3c8;
+      --dim: #64748b;
+      --blue: #38bdf8;
+      --emerald: #34d399;
+      --amber: #fbff24;
+      --purple: #c084fc;
+      --coral: #f87171;
+    }
+    [data-theme="light"] {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --elevated: #f1f5f9;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --text: #0f172a;
+      --muted: #475569;
+      --dim: #94a3b8;
+      --blue: #0284c7;
+      --emerald: #059669;
+      --amber: #d97706;
+      --purple: #7c3aed;
+      --coral: #dc2626;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+    header { position: sticky; top: 0; z-index: 100; background: var(--surface); border-bottom: 1px solid var(--border); padding: 0.85rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+    .brand { display: flex; align-items: center; gap: 0.85rem; }
+    .logo { width: 36px; height: 36px; background: linear-gradient(135deg, #0284c7, #38bdf8); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; font-size: 1.15rem; }
+    .brand-title { font-size: 1.15rem; font-weight: 700; color: var(--text); }
+    .brand-sub { font-size: 0.78rem; color: var(--muted); }
+    .controls { display: flex; align-items: center; gap: 1rem; }
+    .search { background: var(--elevated); border: 1px solid var(--border); color: var(--text); padding: 0.45rem 1rem; border-radius: 9999px; outline: none; width: 220px; font-size: 0.85rem; }
+    .search:focus { width: 260px; border-color: var(--blue); }
+    .theme-btn { background: var(--elevated); border: 1px solid var(--border); color: var(--text); padding: 0.45rem 0.85rem; border-radius: 9999px; cursor: pointer; font-size: 0.82rem; font-weight: 600; }
+    nav.tabs { background: var(--elevated); border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; gap: 0.5rem; overflow-x: auto; }
+    .tab-btn { background: none; border: none; border-bottom: 2px solid transparent; color: var(--muted); padding: 0.85rem 1rem; cursor: pointer; font-size: 0.88rem; font-weight: 600; white-space: nowrap; }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+    main { max-width: 1300px; margin: 0 auto; padding: 2.5rem 2rem 4rem; }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+    h1 { font-size: 1.85rem; font-weight: 800; margin-bottom: 0.5rem; }
+    p.lead { font-size: 1.05rem; color: var(--muted); margin-bottom: 2rem; max-width: 950px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.4rem; }
+    .card:hover { border-color: var(--border-strong); }
+    .card-hdr { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.75rem; }
+    .card-title { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+    .badge { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; padding: 0.2rem 0.55rem; border-radius: 9999px; }
+    .badge-blue { background: rgba(56,189,248,0.12); color: var(--blue); border: 1px solid rgba(56,189,248,0.3); }
+    .badge-emerald { background: rgba(52,211,153,0.12); color: var(--emerald); border: 1px solid rgba(52,211,153,0.3); }
+    .badge-amber { background: rgba(251,191,36,0.12); color: var(--amber); border: 1px solid rgba(251,191,36,0.3); }
+    .badge-purple { background: rgba(192,132,252,0.12); color: var(--purple); border: 1px solid rgba(192,132,252,0.3); }
+    .card-desc { font-size: 0.88rem; color: var(--muted); line-height: 1.55; margin-bottom: 1rem; }
+    .meta { list-style: none; font-size: 0.82rem; border-top: 1px solid var(--border); padding-top: 0.75rem; display: flex; flex-direction: column; gap: 0.4rem; }
+    .meta li { display: flex; justify-content: space-between; color: var(--dim); }
+    .meta code { color: var(--text); font-family: ui-monospace, monospace; }
+    .pipeline { display: flex; align-items: stretch; gap: 0.65rem; min-width: 900px; }
+    .flow-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.75rem; margin-bottom: 2.5rem; overflow-x: auto; }
+    .step { flex: 1; background: var(--elevated); border: 1px solid var(--border); border-radius: 10px; padding: 1.15rem 0.9rem; text-align: center; }
+    .step-num { width: 28px; height: 28px; border-radius: 50%; background: rgba(56,189,248,0.15); color: var(--blue); font-weight: 700; font-size: 0.82rem; margin: 0 auto 0.5rem; display: flex; align-items: center; justify-content: center; border: 1px solid var(--blue); }
+    .step-title { font-size: 0.88rem; font-weight: 700; color: var(--text); margin-bottom: 0.35rem; }
+    .step-detail { font-size: 0.76rem; color: var(--muted); line-height: 1.4; }
+    .step-arrow { display: flex; align-items: center; color: var(--dim); font-size: 1.25rem; user-select: none; }
+    table { width: 100%; border-collapse: collapse; margin: 1.5rem 0 2.5rem; font-size: 0.88rem; }
+    th { background: var(--elevated); text-align: left; padding: 0.85rem 1rem; font-weight: 600; border-bottom: 2px solid var(--border-strong); color: var(--text); }
+    td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); color: var(--muted); }
+    tr:hover td { background: var(--elevated); color: var(--text); }
+    .tag { font-family: ui-monospace, monospace; font-size: 0.75rem; background: var(--elevated); border: 1px solid var(--border); padding: 0.15rem 0.45rem; border-radius: 4px; color: var(--blue); }
+    pre { background: var(--elevated); border: 1px solid var(--border); border-radius: 8px; padding: 0.9rem; font-family: ui-monospace, monospace; font-size: 0.82rem; overflow-x: auto; margin: 0.85rem 0; color: var(--text); line-height: 1.5; }
+    .practice { background: linear-gradient(135deg, rgba(2,132,199,0.12), rgba(124,58,237,0.12)); border: 1px solid rgba(56,189,248,0.35); border-radius: 14px; padding: 2rem; margin-bottom: 2.5rem; }
+    .exercise { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; margin-top: 1.25rem; }
+    ol { margin-left: 1.25rem; font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+    @media (max-width: 768px) {
+      header { padding: 0.75rem 1rem; }
+      nav.tabs { padding: 0 1rem; }
+      main { padding: 1.5rem 1rem 3rem; }
+      .grid { grid-template-columns: 1fr; }
+      .pipeline { flex-direction: column; min-width: 0; }
+      .step-arrow { transform: rotate(90deg); margin: 0.5rem 0; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">μL</div>
+      <div>
+        <div class="brand-title">MicroLearning Studio</div>
+        <div class="brand-sub">Developer Architecture Guide &amp; Application Map</div>
+      </div>
+    </div>
+    <div class="controls">
+      <input type="text" class="search" placeholder="Quick search..." onkeyup="filterCards(this.value)" />
+      <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">☀ Theme</button>
+    </div>
+  </header>
+  <nav class="tabs">
+    <button class="tab-btn active" onclick="showTab('journey')">🚩 Journey &amp; Routes</button>
+    <button class="tab-btn" onclick="showTab('components')">🧩 Component Catalog</button>
+    <button class="tab-btn" onclick="showTab('contracts')">📜 Data Contracts</button>
+    <button class="tab-btn" onclick="showTab('generator')">⚡ 5-Stage Engine</button>
+    <button class="tab-btn" onclick="showTab('persistence')">💾 Persistence</button>
+    <button class="tab-btn" onclick="showTab('tour')">👂 Code Tour</button>
+    <button class="tab-btn" onclick="showTab('practice')">🙰 Practice Activity</button>
+  </nav>
+  <main>
+
+    <section id="tab-journey" class="tab-pane active">
+      <h1>Core User Journey &amp; Route Map</h1>
+      <p class="lead">MicroLearning Studio enables a complete creator-to-learner workflow: ingest source text, adaptively extract a card deck, refine cards in the deck editor, and read in a focused player with comprehension checkpoints.</p>
+      <div class="flow-wrap">
+        <div class="pipeline">
+          <div class="step"><div class="step-num">1</div><div class="step-title">Explore Lessons</div><div class="tag">/</div><div class="step-detail">Showcase catalog &amp; seed lessons</div></div>
+          <div class="step-arrow">&rarr;</div>
+          <div class="step"><div class="step-num">2</div><div class="step-title">Creator Studio</div><div class="tag">/studio</div><div class="step-detail">Source ingestion &amp; validation</div></div>
+          <div class="step-arrow">&rarr;</div>
+          <div class="step"><div class="step-num">3</div><div class="step-title">5-Stage Engine</div><div class="tag">generator.ts</div><div class="step-detail">Grounded extraction &amp; audit</div></div>
+          <div class="step-arrow">&rarr;</div>
+          <div class="step"><div class="step-num">4</div><div class="step-title">Deck Editor</div><div class="tag">/editor/:id</div><div class="step-detail">3-pane layout, locking &amp; save</div></div>
+          <div class="step-arrow">&rarr;</div>
+          <div class="step"><div class="step-num">5</div><div class="step-title">Reader Player</div><div class="tag">/lessons/:id</div><div class="step-detail">Cards, quiz &amp; completion</div></div>
+        </div>
+      </div>
+      <h2 style="font-size:1.25rem;font-weight:700;margin-bottom:0.75rem;">Application Routes</h2>
+      <table>
+        <thead><tr><th>Route URL</th><th>File</th><th>Component</th><th>Domain / Storage</th><th>Transitions</th></tr></thead>
+        <tbody><tr>
+          <td><span class="tag">/</span></td>
+          <td><code>app/routes/_index.tsx</code></td>
+          <td><code>ReaderLanding.tsx</code></td>
+          <td>storageService.getLessons()</td>
+          <td>Navigates to /lessons/:id or /studio</td>
+        </tr><tr>
+          <td><span class="tag">/studio</span></td>
+          <td><code>app/routes/studio.tsx</code></td>
+          <td><code>SourceInputForm.tsx, GenerationResultReview.tsx</code></td>
+          <td>Transient generation state, quality audits</td>
+          <td>Handoffs to /editor/:id via Open Card Editor</td>
+        </tr><tr>
+          <td><span class="tag">/editor/:id</span></td>
+          <td><code>app/routes/editor..tsx</code></td>
+          <td><code>CardDeckEditor.tsx</code></td>
+          <td>draftService (transient), commits to storageService</td>
+          <td>Save & View in Reader redirects to /lessons/:id</td>
+        </tr><tr>
+          <td><span class="tag">/lessons/:id</span></td>
+          <td><code>app/routes/lessons..tsx</code></td>
+          <td><code>ReaderPlayer.tsx, LessonCompletion.tsx</code></td>
+          <td>progressService (versioned progress)</td>
+          <td>Edit Deck opens /editor/:id; Explore returns to /</td>
+        </tr></tbody></table></section>
+    <section id="tab-components" class="tab-pane">
+      <h1>Principal Component Catalog</h1>
+      <p class="lead">Modular components partitioned across Application Shell, Reader Experience, Creator Studio, and Card Deck Editor.</p>
+      <div class="grid" id="comp-grid"><div class="card filterable">
+          <div class="card-hdr">
+            <div class="card-title">ReaderPlayer</div>
+            <span class="badge badge-blue">Reader Engine</span>
+          </div>
+          <div class="card-desc">Core card-by-card reading engine. Manages active card index, step transitions, progress bar, mobile sticky navigation bar, and checkpoint interactions.</div>
+          <ul class="meta">
+            <li><span>Path:</span><code>app/components/ReaderPlayer.tsx</code></li>
+            <li><span>Props:</span><code>lesson: Lesson</code></li>
+            <li><span>State:</span><code>currentCardIndex, selectedAnswers</code></li>
+          </ul>
+        </div><div class="card filterable">
+          <div class="card-hdr">
+            <div class="card-title">CardDeckEditor</div>
+            <span class="badge badge-purple">Creator Studio</span>
+          </div>
+          <div class="card-desc">Master 3-pane editing suite (Deck Outline, Active Card Form, Live Reader Preview) with card reordering, card locking, checkpoint editing, and draft isolation.</div>
+          <ul class="meta">
+            <li><span>Path:</span><code>app/components/editor/CardDeckEditor.tsx</code></li>
+            <li><span>Props:</span><code>initialLesson: Lesson</code></li>
+            <li><span>State:</span><code>draftLesson, activeCardId, isDirty</code></li>
+          </ul>
+        </div><div class="card filterable">
+          <div class="card-hdr">
+            <div class="card-title">CheckpointCard</div>
+            <span class="badge badge-emerald">Comprehension</span>
+          </div>
+          <div class="card-desc">Strict comprehension checkpoint component. Enforces answer selection, instant visual correctness feedback, and source-grounded explanation disclosure.</div>
+          <ul class="meta">
+            <li><span>Path:</span><code>app/components/CheckpointCard.tsx</code></li>
+            <li><span>Props:</span><code>checkpoint: CheckpointData, onAnswer</code></li>
+            <li><span>State:</span><code>selectedOption, isSubmitted</code></li>
+          </ul>
+        </div><div class="card filterable">
+          <div class="card-hdr">
+            <div class="card-title">InstructionalDiagram</div>
+            <span class="badge badge-amber">Visual Media</span>
+          </div>
+          <div class="card-desc">Semantic diagram renderer for ProcessFlowSpec (horizontal sequence on desktop, vertical flow with connectors on mobile) and ComparisonSpec tables.</div>
+          <ul class="meta">
+            <li><span>Path:</span><code>app/components/InstructionalDiagram.tsx</code></li>
+            <li><span>Props:</span><code>spec: InstructionalMediaSpec</code></li>
+            <li><span>State:</span><code>Responsive SVG connectors</code></li>
+          </ul>
+        </div><div class="card filterable">
+          <div class="card-hdr">
+            <div class="card-title">SourceInputForm</div>
+            <span class="badge badge-blue">Creator Studio</span>
+          </div>
+          <div class="card-desc">Creator source ingestion form with real-time word counter (200 - 10,000 words boundary), URL validation, and mandatory author permission acknowledgment.</div>
+          <ul class="meta">
+            <li><span>Path:</span><code>app/components/studio/SourceInputForm.tsx</code></li>
+            <li><span>Props:</span><code>onStartGeneration: (input) => void</code></li>
+            <li><span>State:</span><code>title, author, url, text, acknowledged</code></li>
+          </ul>
+        </div><div class="card filterable">
+          <div class="card-hdr">
+            <div class="card-title">GenerationResultReview</div>
+            <span class="badge badge-purple">Audit & Handoff</span>
+          </div>
+          <div class="card-desc">Post-generation inspection screen displaying the 100-point Quality Audit rubric, card deck overview, source takeaways, and Open Card Editor action.</div>
+          <ul class="meta">
+            <li><span>Path:</span><code>app/components/studio/GenerationResultReview.tsx</code></li>
+            <li><span>Props:</span><code>lesson, qualityReport, analysis</code></li>
+            <li><span>State:</span><code>Slice4HandoffPayload</code></li>
+          </ul>
+        </div></div></section>
+    <section id="tab-contracts" class="tab-pane">
+      <h1>Lesson &amp; Schema Data Contracts</h1>
+      <p class="lead">Strict TypeScript interfaces in <code>app/types/lesson.ts</code> and <code>app/types/media.ts</code> define the system contracts.</p>
+      <div class="grid">
+        <div class="card">
+          <div class="card-title" style="margin-bottom:0.5rem;">Lesson (Canonical Aggregate Root)</div>
+          <div class="card-desc">Represents an entire standalone micro-learning lesson unit.</div>
+          <pre><code>export interface Lesson {
+  id: string;               // UUID or slug
+  title: string;            // Lesson title
+  author: string;           // Original author attribution
+  sourceUrl?: string;       // Link to original source article
+  sourceSnippet: string;    // Core thesis / summary
+  estimatedReadMinutes: number; // Dynamic read time (~180 wpm)
+  totalCards: number;       // Bound between 4 and 8 cards
+  cards: LessonCard[];      // Ordered sequence of cards
+  keyTakeaways?: string[];  // 2-4 completion takeaways
+  version: number;          // Schema version for migrations
+  createdAt: string;        // ISO timestamp
+}</code></pre>
+        </div>
+        <div class="card">
+          <div class="card-title" style="margin-bottom:0.5rem;">LessonCard (Atomic Learning Card)</div>
+          <div class="card-desc">Individual card containing Markdown, code block, diagram, or checkpoint.</div>
+          <pre><code>export interface LessonCard {
+  id: string;               // Stable identifier (e.g. card-1)
+  order: number;            // 1-indexed card order
+  type: CardType;           // 'narrative'|'code'|'comparison'|'checkpoint'
+  title: string;            // Concept heading
+  content: string;          // GFU Markdown & code blocks
+  visualMedia?: InstructionalMediaSpec; // ProcessFlow / Comparison
+  checkpoint?: CheckpointData;          // Present if checkpoint
+  isLocked?: boolean;       // Guarded against regeneration
+}</code></pre>
+        </div>
+      </div>
+    </section>
+    <section id="tab-generator" class="tab-pane">
+      <h1>The 5-Stage Adaptive Generation Engine</h1>
+      <p class="lead">Implemented in <code>app/services/generator.ts</code>, transforming unformatted source text into a structured, high-retention micro-learning deck through 5 verifiable stages.</p>
+      <div class="grid"><div class="card filterable">
+          <div class="card-hdr">
+            <div class="card-title">Stage 1: Understand Source</div>
+            <span class="badge badge-purple">Stage 1</span>
+          </div>
+          <div class="card-desc">Extracts thesis, code snippets, key terms, process steps, and comparisons via disciplined AST-like structural parsing.</div>
+          <ul class="meta">
+            <li><span>Method:</span><code>understandSource(input)</code></li>
+            <li><span>Invariants:</span><code>Thesis length > 20 chars; extracts verbatim code fences; deduplicates technical terms.</code></li>
+          </ul>
+        </div><div class="card filterable">
+          <div class="card-hdr">
+            <div class="card-title">Stage 2: Adaptive Lesson Planning</div>
+            <span class="badge badge-purple">Stage 2</span>
+          </div>
+          <div class="card-desc">Dynamically computes optimal card count (4 to 8 cards) based on source word count and structural density.</div>
+          <ul class="meta">
+            <li><span>Method:</span><code>planLesson(analysis, input)</code></li>
+            <li><span>Invariants:</span><code>Strict card count bound: 4 <= targetCardCount <= 8; allocates card archetypes.</code></li>
+          </ul>
+        </div><div class="card filterable">
+          <div class="card-hdr">
+            <div class="card-title">Stage 3: Creating Grounded Cards</div>
+            <span class="badge badge-purple">Stage 3</span>
+          </div>
+          <div class="card-desc">Synthesizes narrative Markdown cards, grounded code examples, and structured media specifications.</div>
+          <ul class="meta">
+            <li><span>Method:</span><code>createCards(plan, analysis, input)</code></li>
+            <li><span>Invariants:</span><code>Preserves code indentation and syntax; validates ProcessFlowSpec / ComparisonSpec.</code></li>
+          </ul>
+        </div><div class="card filterable">
+          <div class="card-hdr">
+            <div class="card-title">Stage 4: Strict Checkpoint Contract</div>
+            <span class="badge badge-purple">Stage 4</span>
+          </div>
+          <div class="card-desc">Constructs grounded multiple choice question with exactly 1 correct answer, 3 distractors, and explanation.</div>
+          <ul class="meta">
+            <li><span>Method:</span><code>createCheckpoint(analysis, input)</code></li>
+            <li><span>Invariants:</span><code>4 options (A-D); correctAnswer in [0,3]; non-empty source-backed explanation.</code></li>
+          </ul>
+        </div><div class="card filterable">
+          <div class="card-hdr">
+            <div class="card-title">Stage 5: Quality Audit & Scoring</div>
+            <span class="badge badge-purple">Stage 5</span>
+          </div>
+          <div class="card-desc">Evaluates lesson across 100-point rubric checking thesis grounding, card count, code fences, and takeaways.</div>
+          <ul class="meta">
+            <li><span>Method:</span><code>auditLessonQuality(lesson, analysis)</code></li>
+            <li><span>Invariants:</span><code>Deterministic scoring (0-100); classifies Defensible vs Needs Review.</code></li>
+          </ul>
+        </div></div></section>
+    <section id="tab-persistence" class="tab-pane">
+      <h1>State &amp; Storage Isolation Architecture</h1>
+      <p class="lead">Clean partitioning across localStorage keys ensures that in-progress editor drafts never bleed into saved lessons, and reader progress resets cleanly on version increments.</p>
+      <table>
+        <thead><tr><th>Storage Key</th><th>Service</th><th>Lifecycle</th><th>Isolation Guarantee</th></tr></thead>
+        <tbody><tr>
+          <td><code>microlearning_lessons_v3</code></td>
+          <td><code>app/services/storage.ts</code></td>
+          <td>Persistent canonical library. Seeded on first boot.</td>
+          <td>Read-only to editor until explicit Save Lesson or Save & View in Reader action.</td>
+        </tr><tr>
+          <td><code>microlearning_editor_draft_{id}</code></td>
+          <td><code>app/services/draft.ts</code></td>
+          <td>Transient in-progress editing session. Survives reload.</td>
+          <td>Fully isolated per lesson. Cleared automatically upon saving to canonical library.</td>
+        </tr><tr>
+          <td><code>microlearning_reader_progress_v1</code></td>
+          <td><code>app/services/progress.ts</code></td>
+          <td>Reader progress (card index, answered checkpoint states).</td>
+          <td>Version-aware: if lesson version increments, stale progress resets to card 0.</td>
+        </tr><tr>
+          <td><code>microlearning_theme</code></td>
+          <td><code>app/root.tsx</code></td>
+          <td>Global theme preference (clean-light, focused-dark, warm-editorial).</td>
+          <td>Synchronously sets data-theme attribute on <html> preventing flash of unstyled content.</td>
+        </tr></tbody></table></section>
+    <section id="tab-tour" class="tab-pane">
+      <h1>Developer Source Code Tour</h1>
+      <p class="lead">Top files to inspect first to understand the implementation and make changes safely.</p>
+      <div class="grid"><div class="card filterable">
+          <div class="card-hdr">
+            <div class="card-title">1. app/services/generator.ts</div>
+            <span class="badge badge-blue">Generation Engine</span>
+          </div>
+          <div class="card-desc">Heart of lesson generation. Houses 5-stage extraction pipeline, source text regex analysis, and the 100-point quality audit rubric.</div>
+        </div><div class="card filterable">
+          <div class="card-hdr">
+            <div class="card-title">2. app/components/editor/CardDeckEditor.tsx</div>
+            <span class="badge badge-blue">Editor Suite</span>
+          </div>
+          <div class="card-desc">Master editing interface. Coordinates 3-pane layout, mobile segmented navigation, card locking, dirty tracking, and live reader preview.</div>
+        </div><div class="card filterable">
+          <div class="card-hdr">
+            <div class="card-title">3. app/components/ReaderPlayer.tsx</div>
+            <span class="badge badge-blue">Reader Engine</span>
+          </div>
+          <div class="card-desc">Distraction-free learning player. Handles card transitions, progress bar, mobile sticky navigation bar, and checkpoint interactions.</div>
+        </div><div class="card filterable">
+          <div class="card-hdr">
+            <div class="card-title">4. app/types/lesson.ts & media.ts</div>
+            <span class="badge badge-blue">Data Contracts</span>
+          </div>
+          <div class="card-desc">Canonical schemas for Lesson, LessonCard, CheckpointData, and InstructionalMediaSpec. Defines system-wide data integrity.</div>
+        </div><div class="card filterable">
+          <div class="card-hdr">
+            <div class="card-title">5. app/services/draft.ts & storage.ts</div>
+            <span class="badge badge-blue">Persistence</span>
+          </div>
+          <div class="card-desc">Manages localStorage isolation, draft recovery, dirty-state tracking, and JSON export serialization.</div>
+        </div><div class="card filterable">
+          <div class="card-hdr">
+            <div class="card-title">6. app/components/InstructionalDiagram.tsx</div>
+            <span class="badge badge-blue">Visual Media</span>
+          </div>
+          <div class="card-desc">Responsive instructional media renderer. Translates ProcessFlowSpec and ComparisonSpec into accessible, theme-aware diagrams.</div>
+        </div></div></section>
+    <section id="tab-practice" class="tab-pane">
+      <div class="practice">
+        <h2 style="font-size:1.35rem;font-weight:800;margin-bottom:0.75rem;">Project-Grounded Practice: Extending the Quality Audit Rubric</h2>
+        <p style="font-size:0.95rem;margin-bottom:0.75rem;"><strong>Objective:</strong> Extend the deterministic 5-Stage Adaptive Generation Engine by adding a new automated quality check to Stage 5 (Quality Audit).</p>
+        <p style="font-size:0.88rem;color:var(--muted);margin-bottom:1.25rem;">Micro-learning research demonstrates that cards with under 20 words lack context, while cards over 150 words cause cognitive fatigue. In <code>app/services/generator.ts</code>, add an audit check verifying average word count per card is in the sweet spot (30-120 words).</p>
+        <div class="exercise">
+          <h3 style="font-size:1.05rem;font-weight:700;margin-bottom:0.6rem;">Implementation Guide:</h3>
+          <ol>
+            <li>Open <code>app/services/generator.ts</code> and locate <code>auditLessonQuality(lesson, analysis)</code>.</li>
+            <li>Calculate average word count: <code>const avgWords = Math.round(lesson.cards.reduce((sum, c) =&gt; sum + countWords(c.content), 0) / lesson.cards.length);</code></li>
+            <li>If <code>avgWords &gt;= 30 &amp;&amp; avgWords &lt;= 120</code>, award 10 points: <code>rubric.push({ criterion: 'Card Readability &amp; Density', maxPoints: 10, awardedPoints: 10, feedback: `Optimal micro-learning density (${avgWords} words/card average).` });</code></li>
+            <li>In <code>tests/generation.test.mjs</code>, add assertion: <code>assert.ok(report.rubric.some(r =&gt; r.criterion.includes('Density')), 'Must evaluate card word density');</code></li>
+            <li>Run <code>npm test</code> to verify zero errors and clean output!</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function showTab(id) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      const target = document.getElementById('tab-' + id);
+      if (target) { target.classList.add('active'); }
+      event.currentTarget.classList.add('active');
+    }
+    function toggleTheme() {
+      const cur = document.documentElement.getAttribute('data-theme');
+      const next = cur === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', next);
+      document.getElementById('theme-btn').textContent = next === 'light' ? 'Theme (Light)' : 'Theme (Dark)';
+    }
+    function filterCards(q) {
+      const query = q.toLowerCase();
+      document.querySelectorAll('.filterable').forEach(card => {
+        card.style.display = card.textContent.toLowerCase().includes(query) ? 'block' : 'none';
+      });
+    }
+  </script>
+</body>
+</html>
