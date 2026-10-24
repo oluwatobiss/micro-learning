@@ -139,12 +139,12 @@ npm run build
 | Requirement                  | Status / Destination                          | Description                                                           |
 | :--------------------------- | :-------------------------------------------- | :-------------------------------------------------------------------- |
 | **Public GitHub Repository** | https://github.com/oluwatobiss/micro-learning | Full source code, test suites, and documentation.                     |
-| **Demo Video**               | [Add Learner Video URL Here]                  | 1—3 minute video demonstrating the core creator & reader journey.     |
-| **Live App URL**             | Optional / Localhost                          | Offline-first local web app; live deployment optional.                |
+| **Demo Video**               | https://youtu.be/ycEEP1eBtOc                  | 1—3 minute video demonstrating the core creator & reader journey.     |
+| **Live App URL**             | https://micro-learning.vercel.app             | Offline-first local web app; live deployment optional.                |
 | **App Map & Guide**          | devpost/app-map.html                          | Self-contained 29KB interactive architectural guide and code tour.    |
 | **Build Checklist**          | devpost/checklist.md                          | Complete verification record with learner sign-off and reflection.    |
 | **Product Spec & PRD**       | devpost/prd.md, devpost/spec.md               | Formal product requirements and technical architecture specification. |
-| **Automated Tests**          | ests/*.test.mjs                               | 26 automated unit and integration tests passing cleanly.              |
+| **Automated Tests**          | tests/*.test.mjs                              | 26 automated unit and integration tests passing cleanly.              |
 
 ---
 

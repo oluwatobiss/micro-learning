@@ -1,4 +1,4 @@
-# Micro Lesson
+# MicroLearning Studio
 
 > Transform long-form educational content into focused, source-grounded interactive micro-learning card decks with active comprehension checkpoints. Built for the [Build With AI: Basics Hackathon](https://learn-ai-basics.devpost.com).
 
@@ -9,11 +9,16 @@
 
 ---
 
-## What is Micro Lesson?
+## What is MicroLearning Studio?
 
-**Micro Lesson** (also known as MicroLearning Studio) is a creator-first web application designed to help authors, educators, technical writers, and domain experts turn lengthy publications—articles, documentation, essays, and book chapters—into structured, bite-sized micro-learning experiences.
+**MicroLearning Studio** is a creator-first web application designed to help authors, educators, technical writers, and domain experts turn lengthy publications—articles, documentation, essays, and book chapters—into structured, bite-sized micro-learning experiences.
 
-Rather than producing a generic text summary or disconnected flashcards, Micro Lesson adaptively extracts the core concepts and narrative flow of a source into a cohesive sequence of cards. It embeds active comprehension checkpoints that test reader understanding with immediate feedback, while giving creators full editorial control to review, modify, reorder, lock, and customize cards before saving them to their library.
+Rather than producing a generic text summary or disconnected flashcards, MicroLearning Studio adaptively extracts the core concepts and narrative flow of a source into a cohesive sequence of cards. It embeds active comprehension checkpoints that test reader understanding with immediate feedback, while giving creators full editorial control to review, modify, reorder, lock, and customize cards before saving them to their library.
+
+## Live Demo
+
+- [Try MicroLearning Studio](https://micro-learning.vercel.app)
+- [Watch the DApp's Demo on YouTube](https://youtu.be/ycEEP1eBtOc)
 
 ---
 
@@ -32,7 +37,7 @@ Existing alternatives fall short:
 
 ### The Approach
 
-Micro Lesson combines structured content transformation with active learning science:
+MicroLearning Studio combines structured content transformation with active learning science:
 
 1. **Adaptive Card Architecture:** Organizes content into focused narrative units (4–8 cards) adaptively sized according to the density and complexity of the source text.
 2. **Active Recall with Grounded Explanations:** Embeds single-concept checkpoints with instant visual feedback and educational explanations anchored directly in source claims.
@@ -63,7 +68,7 @@ Micro Lesson combines structured content transformation with active learning sci
 
 A clean, distraction-free player presenting narrative cards and interactive comprehension checks with immediate feedback:
 
-![Micro Lesson Reader Experience](devpost/assets/reader-experience.png)
+![MicroLearning Studio Reader Experience](devpost/assets/reader-experience.png)
 
 ### 2. Creator Studio & Generation Review
 
@@ -75,7 +80,7 @@ Source input validation followed by the five-stage extraction engine and quality
 
 A 3-pane workspace featuring deck outline navigation, central card content editing with lock controls, and a live Reader preview frame:
 
-![Micro Lesson Card Deck Editor](devpost/assets/card-deck-editor.png)
+![MicroLearning Studio Card Deck Editor](devpost/assets/card-deck-editor.png)
 
 ---
 
@@ -184,7 +189,7 @@ For in-depth architectural details, developer guides, and planning history, refe
 
 ## Hackathon Context
 
-Micro Lesson was built for the **[Build With AI: Basics Hackathon](https://learn-ai-basics.devpost.com)** hosted on Devpost. The application was scoped, planned, and implemented using the **Devpost Learn Skill Pack**, following a structured phase-based workflow from initial interview through design, sliced implementation, testing, hands-on review, and final packaging.
+MicroLearning Studio was built for the **[Build With AI: Basics Hackathon](https://learn-ai-basics.devpost.com)** hosted on Devpost. The application was scoped, planned, and implemented using the **Devpost Learn Skill Pack**, following a structured phase-based workflow from initial interview through design, sliced implementation, testing, hands-on review, and final packaging.
 
 ---
 

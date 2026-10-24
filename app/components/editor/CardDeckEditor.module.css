@@ -172,6 +172,7 @@
 
 .readerActionBtn:hover {
   filter: brightness(1.1);
+  color: var(--feedback-success);
   box-shadow: 0 2px 8px rgba(46, 125, 50, 0.25);
 }
 

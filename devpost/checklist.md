@@ -72,7 +72,7 @@ Activity mode: Interactive app map & project-grounded extension activity.
 
 ### Learner Edit and Transfer Reflection
 
-#### 1. What did I learn from using the Devpost Learn Skill Pack?
+#### 1. What did I learn?
 
 One of my most valuable takeaways from this project was learning how to approach software development as a guided, structured process rather than jumping straight from an idea into writing code.
 
@@ -84,7 +84,7 @@ I learned the value of taking time to understand an idea before coding, making d
 
 #### 2. What did I edit, improve, or contribute?
 
-I developed Micro Lesson application for transforming source material into interactive micro-learning experiences. Throughout the process, I reviewed the evolving application, evaluated the user experience, and worked through refinements to the reader, comprehension checkpoints, creator studio, and card deck editor.
+I developed MicroLearning Studio for transforming source material into interactive micro-learning experiences. Throughout the process, I reviewed the evolving application, evaluated the user experience, and worked through refinements to the reader, comprehension checkpoints, creator studio, and card deck editor.
 
 The iterative review process reinforced the importance of checking how individual features work together in a complete user journey. It also helped me appreciate the distinction between an application that merely runs and one whose behavior, limitations, and user experience have been deliberately examined.
 
