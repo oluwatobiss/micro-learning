@@ -17,7 +17,7 @@ Rather than producing a generic text summary or disconnected flashcards, MicroLe
 
 ## Live Demo
 
-- [Try MicroLearning Studio](https://micro-learning.vercel.app)
+- [Try MicroLearning Studio](https://micro-learning-brown.vercel.app)
 - [Watch the DApp's Demo on YouTube](https://youtu.be/ycEEP1eBtOc)
 
 ---
