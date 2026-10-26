@@ -5,4 +5,5 @@ export default [
   route("lessons/:id", "routes/lessons.$id.tsx"),
   route("studio", "routes/studio.tsx"),
   route("editor/:id", "routes/editor.$id.tsx"),
+  route("api/generate", "routes/api.generate.ts"),
 ] satisfies RouteConfig;

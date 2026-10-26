@@ -1,33 +1,49 @@
-import type { Lesson, LessonCard, QuizCheckpoint } from "../types/lesson";
 import type {
-  InstructionalMediaSpec,
-  ProcessFlowSpec,
-} from "../types/media.ts";
+  Lesson,
+  LessonCard,
+  QuizCheckpoint,
+  QuizOption,
+  GenerationStageId,
+} from "../types/lesson.ts";
+import type { ProcessFlowSpec } from "../types/media.ts";
 import { validateMediaSpec } from "../types/media.ts";
 import type {
   SourceInputData,
   SourceAnalysis,
-  LessonPlan,
-  PlannedCard,
-  QualityAuditReport,
-  GenerationProgressState,
-  GenerationResult,
   ExtractedSection,
   ExtractedTerm,
   ExtractedProcessStep,
   ExtractedComparison,
+  LessonPlan,
+  PlannedCard,
+  QualityAuditReport,
   StageState,
-} from "../types/generator";
-import type { GenerationStageId } from "../types/lesson";
+  GenerationProgressState,
+  GenerationResult,
+} from "../types/generator.ts";
 import { countWords } from "../utils/text.ts";
 
+export type ServerGenerationEngine = (
+  plan: LessonPlan,
+  analysis: SourceAnalysis,
+  input: SourceInputData,
+) => Promise<{ cards: LessonCard[]; keyTakeaways: string[] }>;
+
+let registeredServerEngine: ServerGenerationEngine | null = null;
+
+export function registerServerEngine(
+  engine: ServerGenerationEngine | null,
+): void {
+  registeredServerEngine = engine;
+}
+
 /**
- * Stage 1: Understanding Source
- * Analyzes the source text to extract central thesis, section structure,
- * literal code snippets, key terminology, process flows, and comparison points.
+ * Stage 1: Understanding Source Analysis
+ * Deterministically parses structured sections, headings, literal code snippets,
+ * bold terminology definitions, numbered sequences, and trade-off comparisons.
  */
 export function understandSource(input: SourceInputData): SourceAnalysis {
-  const text = input.sourceText.trim();
+  const text = input.sourceText;
   const lines = text.split("\n");
 
   const sections: ExtractedSection[] = [];
@@ -163,23 +179,50 @@ export function understandSource(input: SourceInputData): SourceAnalysis {
         valB: parts[1]?.split(";")[1]?.trim() || "Standard approach",
       };
     });
+
+    const headingParts = compSection.heading.split(
+      /\s+(?:vs\.?|versus|and)\s+/i,
+    );
+    const conceptA =
+      headingParts[0]?.trim() ||
+      (keyTerms[0] ? keyTerms[0].term : "Primary Approach");
+    const conceptB =
+      headingParts[1]?.trim() ||
+      (keyTerms[1] ? keyTerms[1].term : "Alternative Approach");
+
     comparisons.push({
-      conceptA: "Optimistic Approach",
-      conceptB: "Pessimistic / Standard Approach",
+      conceptA,
+      conceptB,
       contrasts,
     });
   }
 
   const takeaways: string[] = [
-    `Core Thesis: ${thesis.slice(0, 160)}${thesis.length > 160 ? "..." : ""}`,
-    keyTerms[0]
-      ? `${keyTerms[0].term}: ${cleanDefinition(keyTerms[0].term, keyTerms[0].definition)}`
-      : "Disciplined state isolation preserves data integrity.",
-    processSteps.length >= 2
-      ? `Multi-stage execution requires strict rollback buffers on failure.`
-      : "Sequential verification anchors core concepts.",
-    "Idempotent API mutations guarantee safe client-side recovery without duplicate server side-effects.",
+    `Core Principle: ${thesis.slice(0, 160)}${thesis.length > 160 ? "..." : ""}`,
   ];
+  if (keyTerms[0]) {
+    takeaways.push(
+      `${keyTerms[0].term}: ${cleanDefinition(keyTerms[0].term, keyTerms[0].definition)}`,
+    );
+  }
+  if (keyTerms[1]) {
+    takeaways.push(
+      `${keyTerms[1].term}: ${cleanDefinition(keyTerms[1].term, keyTerms[1].definition)}`,
+    );
+  }
+  if (processSteps.length >= 2) {
+    takeaways.push(
+      `Sequential execution: ${processSteps[0].label} establishes foundational mechanics.`,
+    );
+  } else if (sections.length >= 2) {
+    takeaways.push(
+      `Key architectural principle: Core concepts in ${sections[1].heading} guide practical implementation.`,
+    );
+  } else {
+    takeaways.push(
+      "Disciplined system design anchors dependable implementation.",
+    );
+  }
 
   return {
     thesis,
@@ -189,10 +232,14 @@ export function understandSource(input: SourceInputData): SourceAnalysis {
     comparisons,
     takeaways,
     instructionalOpportunities: [
-      "Immediate narrative motivation from user experience latency",
-      "Process flow mental model diagram for lifecycle stages",
-      "Syntax-highlighted code block demonstrating rollback implementation",
-      "Grounded multiple-choice checkpoint testing failure scenarios",
+      `Foundational motivation derived from ${input.title}`,
+      processSteps.length >= 2
+        ? "Process flow diagram for execution lifecycle"
+        : "Core architectural mental model",
+      sections.some((s) => s.codeSnippets.length > 0)
+        ? "Syntax-highlighted code block demonstrating concrete implementation"
+        : "Concrete technical pattern examples",
+      "Grounded multiple-choice checkpoint testing retention of core principles",
     ],
     totalWordCount: countWords(text),
   };
@@ -233,17 +280,20 @@ export function planLesson(
   cardOutlines.push({
     id: "c1",
     type: "narrative",
-    title: "Perceived Latency & The Optimistic Model",
-    focus:
-      "Introduction of the core latency dilemma and why optimistic prediction beats waiting.",
+    title: `${input.title.trim()}: Core Overview`,
+    focus: `Foundational introduction to the core dilemma, thesis, and primary principles.`,
   });
 
+  const firstTerm = analysis.keyTerms[0];
+  const hasProcess = analysis.processSteps.length >= 2;
   cardOutlines.push({
     id: "c2",
     type: "narrative",
-    title: "The Five-Stage Execution Flow",
-    focus:
-      "Unfolding the sequence from user action to snapshot, optimistic render, and network dispatch.",
+    title: firstTerm
+      ? `Understanding ${firstTerm.term}`
+      : `${input.title.trim()}: Key Mechanics`,
+    focus: `Detailed examination of fundamental terminology, mechanics, and system flow.`,
+    hasVisualMedia: hasProcess,
   });
 
   const hasCode = analysis.sections.some((s) => s.codeSnippets.length > 0);
@@ -251,38 +301,45 @@ export function planLesson(
     cardOutlines.push({
       id: "c3",
       type: "example",
-      title: "Implementing Rollback Buffers",
-      focus:
-        "Literal TypeScript implementation of state snapshot isolation and rollback.",
+      title: "Implementation Patterns & Practical Code",
+      focus: `Concrete code demonstration grounded in the technical source material.`,
       hasCode: true,
     });
   }
 
-  if (analysis.processSteps.length >= 2) {
+  if (analysis.comparisons.length > 0) {
+    const comp = analysis.comparisons[0];
+    cardOutlines.push({
+      id: "c4",
+      type: "comparison",
+      title: `${comp.conceptA} vs. ${comp.conceptB}`,
+      focus: `Balancing benefits against trade-offs, operational complexity, and edge cases.`,
+    });
+  } else if (analysis.sections.length >= 3) {
+    const sec = analysis.sections[2];
     cardOutlines.push({
       id: "c4",
       type: "narrative",
-      title: "Optimistic State-to-Server Architecture",
-      focus:
-        "Structured process-flow visual specification mapping user mutation to reconciliation.",
-      hasVisualMedia: true,
+      title: sec.heading,
+      focus: `In-depth exploration of ${sec.heading} and practical considerations.`,
+    });
+  }
+
+  if (cardOutlines.length < 4 && analysis.keyTerms.length >= 2) {
+    const secondTerm = analysis.keyTerms[1];
+    cardOutlines.push({
+      id: `c${cardOutlines.length + 1}`,
+      type: "narrative",
+      title: `Applying ${secondTerm.term}`,
+      focus: `Practical integration guidance and architectural takeaways.`,
     });
   }
 
   cardOutlines.push({
-    id: "c5",
-    type: "comparison",
-    title: "Optimistic vs. Pessimistic Trade-offs",
-    focus:
-      "Balancing zero perceived latency against complexity, conflict resolution, and failure frequency.",
-  });
-
-  cardOutlines.push({
-    id: "c6",
+    id: `c${cardOutlines.length + 1}`,
     type: "checkpoint",
-    title: "Comprehension Checkpoint",
-    focus:
-      "Self-contained evaluation of rollback buffers, network failure, and idempotency.",
+    title: `${input.title.trim()}: Comprehension Checkpoint`,
+    focus: `Self-contained evaluation of core concepts, mechanics, and failure modes.`,
   });
 
   return {
@@ -295,88 +352,47 @@ export function planLesson(
 /**
  * Stage 3: Creating Cards
  * Synthesizes grounded lesson cards with clear Markdown, literal code, and structured media specs.
+ * Grounded via Gemini AI with strict schema conformance.
  */
-export function createCards(
+export async function createCards(
   plan: LessonPlan,
   analysis: SourceAnalysis,
   input: SourceInputData,
-): LessonCard[] {
-  const cards: LessonCard[] = [];
+): Promise<LessonCard[]> {
+  // 1. If registered server engine exists (e.g. in Node tests or server runtime)
+  if (registeredServerEngine) {
+    const res = await registeredServerEngine(plan, analysis, input);
+    return res.cards;
+  }
 
-  const codeSec = analysis.sections.find((s) => s.codeSnippets.length > 0);
-  const codeSnippet =
-    codeSec?.codeSnippets[0] ||
-    "\`\`\`typescript\n// Optimistic update rollback pattern\ninterface Mutation<T> {\n  snapshot: T;\n  apply: (next: T) => void;\n  rollback: () => void;\n}\n\`\`\`";
+  // 2. If executing in browser environment, call the server-side API endpoint
+  if (typeof window !== "undefined") {
+    const res = await fetch("/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
 
-  const flowSpec: ProcessFlowSpec = {
-    type: "process-flow",
-    id: "optimistic-mutation-lifecycle",
-    title: "Optimistic Mutation Lifecycle",
-    accessibleDescription:
-      "A five-step process flow: 1. User Action. 2. Capture Snapshot Buffer. 3. Instant Optimistic Render. 4. Background Network Dispatch. 5. Server Reconciliation or Rollback.",
-    steps: analysis.processSteps.slice(0, 5).map((step, idx) => ({
-      id: `step-${idx + 1}`,
-      stepNumber: idx + 1,
-      label: step.label,
-      description: step.description,
-      variant: idx === 1 ? "accent" : idx === 4 ? "success" : "default",
-    })),
-  };
+    const data = await res.json().catch(() => null);
 
-  cards.push({
-    id: "c1",
-    type: "narrative",
-    title: "Perceived Latency & The Optimistic Model",
-    content:
-      "In modern web applications, **perceived responsiveness** defines the user experience. Waiting 300 to 800 milliseconds for a server round-trip on every user interaction creates an unmistakable sense of sluggishness.\n\n**Optimistic UI** solves this by updating the user interface immediately under the assumption that the mutation will succeed, while executing the actual network request silently in the background.",
-  });
+    if (!res.ok || !data?.success) {
+      const errMsg =
+        data?.error ||
+        `Lesson card generation failed with HTTP status ${res.status}.`;
+      throw new Error(errMsg);
+    }
 
-  cards.push({
-    id: "c2",
-    type: "narrative",
-    title: "The Resilient Execution Lifecycle",
-    content:
-      "A reliable optimistic mutation is not just an immediate UI update—it is a coordinated **five-step lifecycle** designed to protect data integrity:\n\n1. **User Action**: The user initiates a mutation.\n2. **Snapshot Buffer**: Local state is cloned into an isolated rollback buffer.\n3. **Optimistic Rendering**: The local UI updates instantly with the predicted state.\n4. **Network Dispatch**: The mutation request is sent in the background with an idempotency key.\n5. **Reconciliation or Rollback**: On success, temporary client entities reconcile with server data. On failure, the snapshot buffer restores previous state.",
-  });
+    return data.result.lesson.cards;
+  }
 
-  cards.push({
-    id: "c3",
-    type: "example",
-    title: "Implementing Rollback Buffers",
-    content: `The primary risk in optimistic mutations is **state divergence**—where an unhandled network error leaves phantom data on the client. To ensure resilience, always capture a pristine snapshot prior to applying predictions:\n\n${codeSnippet}\n\nNotice that if \`networkPromise()\` rejects, the \`catch\` block immediately restores \`previousSnapshot\`, ensuring the client never remains in a corrupted state.`,
-  });
-
-  cards.push({
-    id: "c4",
-    type: "narrative",
-    title: "Optimistic State-to-Server Architecture",
-    content:
-      "Visualizing the pipeline clarifies how the client coordinates the local UI update with server communication.\n\nNotice how the **Snapshot Buffer** acts as an emergency parachute: if network communication fails, the application rolls back to the exact pre-mutation state without corrupting unrelated client data.",
-    visualMedia: flowSpec,
-  });
-
-  cards.push({
-    id: "c5",
-    type: "comparison",
-    title: "Optimistic vs. Pessimistic Trade-offs",
-    content:
-      "Choosing between optimistic updates and pessimistic spinners involves explicit architectural trade-offs:\n\n- **Perceived Latency**: Optimistic updates eliminate lag with zero perceived delay. Pessimistic flows force users to wait for network roundtrips.\n- **Implementation Complexity**: Optimistic flows require rollback buffers, conflict resolution, and idempotency keys. Pessimistic flows only update state after confirmed server response.\n- **Failure Frequency**: Optimistic models are ideal for high-probability operations (toggling likes, bookmarking, reordering cards). Pessimistic models are required for destructive or high-risk actions (financial payments, destructive account deletions).",
-  });
-
-  cards.push({
-    id: "c6",
-    type: "checkpoint",
-    title: "Comprehension Checkpoint",
-    content:
-      "Verify your understanding of optimistic mutations, rollback buffers, and state divergence.",
-  });
-
-  return cards;
+  throw new Error(
+    "Server generation engine is not registered and browser environment is not available.",
+  );
 }
 
 /**
  * Stage 4: Creating Comprehension Checks
- * Generates a grounded multiple-choice question with 1 unambiguous correct answer,
+ * Generates or validates a grounded multiple-choice question with 1 unambiguous correct answer,
  * plausible distractors, and an educational explanation grounded in the source text.
  */
 export function createComprehensionChecks(
@@ -386,35 +402,40 @@ export function createComprehensionChecks(
   const checkpointCard = cards.find((c) => c.type === "checkpoint");
   if (!checkpointCard) return;
 
+  // Preserve already-valid checkpoint generated by AI
+  if (
+    checkpointCard.checkpoint &&
+    checkpointCard.checkpoint.question &&
+    checkpointCard.checkpoint.question.length >= 20 &&
+    checkpointCard.checkpoint.options?.length >= 3 &&
+    checkpointCard.checkpoint.options.filter((o) => o.isCorrect).length === 1 &&
+    checkpointCard.checkpoint.explanation &&
+    checkpointCard.checkpoint.explanation.length >= 15
+  ) {
+    return;
+  }
+
   const checkpoint: QuizCheckpoint = {
-    question:
-      "When implementing Optimistic UI, what is the primary purpose of capturing a snapshot buffer before updating local state?",
+    question: `According to the source material, which statement represents the core principle?`,
     options: [
       {
         id: "opt-1",
-        text: "To allow instant restoration of the previous valid state if the background network request fails or times out.",
+        text: analysis.thesis.slice(0, 120),
         isCorrect: true,
       },
       {
         id: "opt-2",
-        text: "To permanently prevent the server from validating the request payload.",
+        text: "The author advocates disregarding architectural trade-offs entirely.",
         isCorrect: false,
       },
       {
         id: "opt-3",
-        text: "To compress HTTP request headers so mutations travel faster across high-latency networks.",
-        isCorrect: false,
-      },
-      {
-        id: "opt-4",
-        text: "To bypass browser garbage collection and preserve memory across page reloads.",
+        text: "Implementation complexity should be prioritized over system reliability.",
         isCorrect: false,
       },
     ],
-    explanation:
-      "A snapshot buffer captures the pristine state prior to mutation. If the background network request fails or times out, the application immediately restores this snapshot to prevent state divergence—ensuring the user interface never displays phantom data that was rejected by the server.",
-    sourceExcerpt:
-      "To prevent divergence, mutations must always preserve the previous state snapshot into an isolated rollback buffer.",
+    explanation: `The source material establishes: ${analysis.thesis.slice(0, 140)}`,
+    sourceExcerpt: analysis.thesis.slice(0, 120),
   };
 
   checkpointCard.checkpoint = checkpoint;
@@ -474,19 +495,18 @@ export function validateQuality(
     );
   }
 
-  let codeBlocksValid = true;
+  let fencesBalanced = true;
   for (const card of lesson.cards) {
-    const fences = (card.content.match(/```/g) || []).length;
-    if (fences % 2 !== 0) {
-      errors.push(
-        `Card "${card.id}" contains an unclosed Markdown code fence.`,
-      );
-      codeBlocksValid = false;
+    const fenceMatches = card.content.match(/```/g);
+    const count = fenceMatches ? fenceMatches.length : 0;
+    if (count % 2 !== 0) {
+      fencesBalanced = false;
+      errors.push(`Card "${card.id}" has an unclosed code fence.`);
     }
   }
-  if (codeBlocksValid) {
+  if (fencesBalanced) {
     checksPassed.push(
-      "All Markdown fenced code blocks are properly opened, closed, and formatted.",
+      "Code blocks integrity verified: all Markdown code fences are balanced.",
     );
   }
 
@@ -494,12 +514,12 @@ export function validateQuality(
   const mediaErrors: string[] = [];
   for (const card of lesson.cards) {
     if (card.visualMedia) {
-      const res = validateMediaSpec(card.visualMedia);
-      if (!res.valid) {
+      const validation = validateMediaSpec(card.visualMedia);
+      if (!validation.valid) {
         mediaValid = false;
-        mediaErrors.push(...res.errors);
+        mediaErrors.push(...validation.errors);
         errors.push(
-          `Card "${card.id}" media spec failed validation: ${res.errors.join(", ")}`,
+          `Card "${card.id}" has invalid instructional media: ${validation.errors.join(", ")}`,
         );
       }
     }
@@ -612,7 +632,7 @@ export async function generateLesson(
     {
       id: "cards",
       label: "Stage 3 — Creating Cards",
-      desc: "Synthesizing narrative explanations, code blocks, and structured diagrams...",
+      desc: "Synthesizing narrative explanations, code blocks, and structured diagrams via Gemini AI...",
     },
     {
       id: "checks",
@@ -692,20 +712,57 @@ export async function generateLesson(
     updateProgress(
       "cards",
       "in-progress",
-      "Synthesizing narrative cards, literal code blocks, and structured diagrams...",
+      "Generating source-grounded cards via Gemini AI...",
     );
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    const cards = createCards(plan, analysis, input);
+
+    let cards: LessonCard[];
+    let keyTakeaways = analysis.takeaways;
+
+    if (registeredServerEngine) {
+      const serverRes = await registeredServerEngine(plan, analysis, input);
+      cards = serverRes.cards;
+      if (serverRes.keyTakeaways && serverRes.keyTakeaways.length >= 2) {
+        keyTakeaways = serverRes.keyTakeaways;
+      }
+    } else if (typeof window !== "undefined") {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data?.success) {
+        const errorMsg =
+          data?.error ||
+          `Server lesson generation failed with status ${res.status}.`;
+        throw new Error(errorMsg);
+      }
+
+      cards = data.result.lesson.cards;
+      if (
+        data.result.lesson.keyTakeaways &&
+        data.result.lesson.keyTakeaways.length >= 2
+      ) {
+        keyTakeaways = data.result.lesson.keyTakeaways;
+      }
+    } else {
+      throw new Error(
+        "Server generation engine is not registered in this runtime.",
+      );
+    }
+
     updateProgress(
       "cards",
       "complete",
-      `Generated ${cards.length} structured lesson cards.`,
+      `Generated ${cards.length} source-grounded lesson cards.`,
     );
 
     updateProgress(
       "checks",
       "in-progress",
-      "Formulating grounded comprehension checkpoint with educational explanation...",
+      "Verifying grounded comprehension checkpoint with educational explanation...",
     );
     await new Promise((resolve) => setTimeout(resolve, 80));
     createComprehensionChecks(cards, analysis);
@@ -715,19 +772,20 @@ export async function generateLesson(
       "Created grounded multiple-choice checkpoint with 1 unambiguous correct answer.",
     );
 
-    const lessonId = input.title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "");
+    const lessonId =
+      input.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "") || "generated-lesson";
 
     const lesson: Lesson = {
-      id: lessonId || "generated-lesson",
+      id: lessonId,
       version: 1,
       title: input.title.trim(),
       author: input.author.trim(),
       sourceUrl: input.sourceUrl.trim(),
       sourceSnippet: analysis.thesis.slice(0, 200),
-      keyTakeaways: analysis.takeaways,
+      keyTakeaways,
       estimatedMinutes: plan.estimatedMinutes,
       createdAt: new Date().toISOString(),
       cards,
@@ -771,7 +829,7 @@ export async function generateLesson(
       sourceAnalysis: analysis,
       qualityReport,
       generatedAt: new Date().toISOString(),
-      provider: "grounded-adaptive-engine",
+      provider: "gemini-ai",
     };
   } catch (error) {
     const errMessage =
