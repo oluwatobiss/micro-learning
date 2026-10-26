@@ -5,7 +5,7 @@ import { Header } from "./components/Header";
 import "./root.css";
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<ThemeMode>("focused-dark");
+  const [theme, setTheme] = useState<ThemeMode>("warm-editorial");
 
   useEffect(() => {
     const saved = localStorage.getItem("microlearning_theme") as ThemeMode;
@@ -16,7 +16,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       setTheme(saved);
       document.documentElement.setAttribute("data-theme", saved);
     } else {
-      document.documentElement.setAttribute("data-theme", "focused-dark");
+      document.documentElement.setAttribute("data-theme", "warm-editorial");
     }
   }, []);
 
