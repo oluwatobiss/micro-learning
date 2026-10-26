@@ -267,3 +267,24 @@
     font-size: 1.4rem;
   }
 }
+
+
+.sampleDemoButton {
+  padding: 0.6rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  background: var(--feedback-success);
+  color: #ffffff;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: none;
+  cursor: pointer;
+}
+
+.sampleDemoButton:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 0 0 2px var(--feedback-success-bg);
+}

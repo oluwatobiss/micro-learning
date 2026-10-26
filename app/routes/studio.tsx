@@ -6,6 +6,10 @@ import type {
   GenerationResult,
 } from "../types/generator";
 import { generateLesson } from "../services/generator";
+import {
+  isBuiltInSampleArticle,
+  getPrecomputedSampleLessonResult,
+} from "../services/sampleArticle";
 import { SourceInputForm } from "../components/studio/SourceInputForm";
 import { GenerationProgressOverlay } from "../components/studio/GenerationProgressOverlay";
 import { GenerationResultReview } from "../components/studio/GenerationResultReview";
@@ -116,6 +120,14 @@ export default function StudioRoute() {
     setViewMode("input");
   };
 
+  const handleUseSampleDemo = () => {
+    if (isBuiltInSampleArticle(lastInput)) {
+      const demoResult = getPrecomputedSampleLessonResult();
+      setResult(demoResult);
+      setViewMode("review");
+    }
+  };
+
   const handleCreateAnother = () => {
     // Reset all transient state from the previous generation
     setResult(null);
@@ -149,6 +161,8 @@ export default function StudioRoute() {
           progress={progress}
           onRetry={handleRetry}
           onCancel={handleCancel}
+          onUseSampleDemo={handleUseSampleDemo}
+          isSampleArticle={isBuiltInSampleArticle(lastInput)}
         />
       )}
 

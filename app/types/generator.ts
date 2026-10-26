@@ -106,12 +106,14 @@ export interface GenerationResult {
   sourceAnalysis: SourceAnalysis;
   qualityReport: QualityAuditReport;
   generatedAt: string;
-  provider: "grounded-adaptive-engine" | "gemini-ai";
+  provider: "grounded-adaptive-engine" | "gemini-ai" | "sample-demo";
+  isPrecomputedDemo?: boolean;
+  modelUsed?: string;
 }
 
 export interface Slice4HandoffPayload {
   lesson: Lesson;
   sourceAnalysis?: SourceAnalysis;
   qualityReport?: QualityAuditReport;
-  provider?: "grounded-adaptive-engine" | "gemini-ai" | "manual-authoring";
+  provider?: "grounded-adaptive-engine" | "gemini-ai" | "manual-authoring" | "sample-demo";
 }

@@ -10,6 +10,8 @@ interface GenerationProgressOverlayProps {
   progress: GenerationProgressState;
   onRetry?: () => void;
   onCancel?: () => void;
+  onUseSampleDemo?: () => void;
+  isSampleArticle?: boolean;
 }
 
 interface StageDefinition {
@@ -59,7 +61,19 @@ const STAGES: StageDefinition[] = [
 
 export const GenerationProgressOverlay: React.FC<
   GenerationProgressOverlayProps
-> = ({ progress, onRetry, onCancel }) => {
+> = ({ progress, onRetry, onCancel, onUseSampleDemo, isSampleArticle }) => {
+  const [elapsedSeconds, setElapsedSeconds] = React.useState(0);
+
+  React.useEffect(() => {
+    if (progress.overallStatus !== "generating") {
+      setElapsedSeconds(0);
+      return;
+    }
+    const timer = setInterval(() => {
+      setElapsedSeconds((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [progress.overallStatus]);
   const getStatusBadge = (status: StageExecutionStatus) => {
     switch (status) {
       case "in-progress":
@@ -149,7 +163,7 @@ export const GenerationProgressOverlay: React.FC<
       <div className={styles.card}>
         <header className={styles.header}>
           <div className={styles.badge} aria-hidden="true">
-            Real-Time Adaptive Pipeline
+            Real-Time Adaptive Pipeline {elapsedSeconds > 0 ? `• ${elapsedSeconds}s elapsed` : ""}
           </div>
           <h2 className={styles.title}>Synthesizing Interactive Lesson</h2>
           <p className={styles.subtitle}>
@@ -232,6 +246,30 @@ export const GenerationProgressOverlay: React.FC<
                   className={styles.retryButton}
                 >
                   Retry Generation
+                </button>
+              )}
+              {isSampleArticle && onUseSampleDemo && (
+                <button
+                  type="button"
+                  onClick={onUseSampleDemo}
+                  className={styles.sampleDemoButton}
+                  id="load-sample-demo-btn"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                  </svg>
+                  <span>Load Pre-Verified Sample Demo</span>
                 </button>
               )}
               {onCancel && (

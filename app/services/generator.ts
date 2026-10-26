@@ -718,39 +718,45 @@ export async function generateLesson(
     let cards: LessonCard[];
     let keyTakeaways = analysis.takeaways;
 
-    if (registeredServerEngine) {
-      const serverRes = await registeredServerEngine(plan, analysis, input);
-      cards = serverRes.cards;
-      if (serverRes.keyTakeaways && serverRes.keyTakeaways.length >= 2) {
-        keyTakeaways = serverRes.keyTakeaways;
-      }
-    } else if (typeof window !== "undefined") {
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
-      });
+    try {
+      if (registeredServerEngine) {
+        const serverRes = await registeredServerEngine(plan, analysis, input);
+        cards = serverRes.cards;
+        if (serverRes.keyTakeaways && serverRes.keyTakeaways.length >= 2) {
+          keyTakeaways = serverRes.keyTakeaways;
+        }
+      } else if (typeof window !== "undefined") {
+        const res = await fetch("/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(input),
+        });
 
-      const data = await res.json().catch(() => null);
+        const data = await res.json().catch(() => null);
 
-      if (!res.ok || !data?.success) {
-        const errorMsg =
-          data?.error ||
-          `Server lesson generation failed with status ${res.status}.`;
-        throw new Error(errorMsg);
-      }
+        if (!res.ok || !data?.success) {
+          const errorMsg =
+            data?.error ||
+            `Server lesson generation failed with status ${res.status}.`;
+          throw new Error(errorMsg);
+        }
 
-      cards = data.result.lesson.cards;
-      if (
-        data.result.lesson.keyTakeaways &&
-        data.result.lesson.keyTakeaways.length >= 2
-      ) {
-        keyTakeaways = data.result.lesson.keyTakeaways;
+        cards = data.result.lesson.cards;
+        if (
+          data.result.lesson.keyTakeaways &&
+          data.result.lesson.keyTakeaways.length >= 2
+        ) {
+          keyTakeaways = data.result.lesson.keyTakeaways;
+        }
+      } else {
+        throw new Error(
+          "Server generation engine is not registered in this runtime.",
+        );
       }
-    } else {
-      throw new Error(
-        "Server generation engine is not registered in this runtime.",
-      );
+    } catch (cardsError: any) {
+      const errMsg = cardsError instanceof Error ? cardsError.message : "Card generation failed.";
+      updateProgress("cards", "failed", errMsg);
+      throw cardsError;
     }
 
     updateProgress(

@@ -3,7 +3,7 @@
 > Transform long-form educational content into focused, source-grounded interactive micro-learning card decks with active comprehension checkpoints. Built for the [Build With AI: Basics Hackathon](https://learn-ai-basics.devpost.com).
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tests: 37 passed](https://img.shields.io/badge/tests-37%20passed-2ea44f.svg)](tests/)
+[![Tests: 47 passed](https://img.shields.io/badge/tests-47%20passed-2ea44f.svg)](tests/)
 [![TypeScript: Strict](https://img.shields.io/badge/TypeScript-strict-3178c6.svg)](tsconfig.json)
 [![Framework: React Router v7](https://img.shields.io/badge/React%20Router-v7%20Framework%20Mode-ea580c.svg)](react-router.config.ts)
 [![AI: Google Gemini](https://img.shields.io/badge/AI-Google%20Gemini%20API-4285F4.svg)](app/services/gemini.server.ts)
@@ -137,6 +137,10 @@ GEMINI_API_KEY=your_gemini_api_key_here
 # Configurable Gemini Model (Optional, defaults to gemini-3.8-flash)
 # Supported models: gemini-3.8-flash (flagship stable), gemini-3.6-flash (stable), gemini-3.5-flash-lite, gemini-4-argon
 GEMINI_MODEL=gemini-3.8-flash
+
+# Configurable Fallback Model (Optional, defaults to gemini-3.6-flash)
+# Automatically attempted if the primary model encounters transient 503 capacity spikes
+GEMINI_FALLBACK_MODEL=gemini-3.6-flash
 ```
 
 > **Security Note:** `GEMINI_API_KEY` is a server-only environment variable. It is never exposed to the client browser, never prefixed with `VITE_`, and never included in committed files.

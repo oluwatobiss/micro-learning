@@ -77,22 +77,42 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
       <section className={styles.heroCard} aria-labelledby="result-title">
         <div className={styles.heroHeader}>
           <div>
-            <div className={styles.successBadge}>
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <polyline points="3.5 8.5 6.5 11.5 12.5 5" />
-              </svg>
-              <span>Lesson generated successfully</span>
-            </div>
+            {result.provider === "sample-demo" ? (
+              <div className={styles.sampleDemoBadge} id="sample-demo-badge">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg>
+                <span>Pre-Verified Sample Demonstration Lesson</span>
+              </div>
+            ) : (
+              <div className={styles.successBadge}>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <polyline points="3.5 8.5 6.5 11.5 12.5 5" />
+                </svg>
+                <span>Lesson generated successfully</span>
+              </div>
+            )}
             <h1 id="result-title" className={styles.lessonTitle}>
               {lesson.title}
             </h1>
@@ -130,6 +150,12 @@ export const GenerationResultReview: React.FC<GenerationResultReviewProps> = ({
             </p>
           </div>
         </div>
+
+        {result.provider === "sample-demo" && (
+          <div className={styles.demoNoticeBanner} role="note">
+            <strong>Demonstration Mode:</strong> This lesson is a pre-verified demonstration created from the built-in Optimistic UI sample article. You can customize cards in the editor, explore the reading experience, or click "Create Another Lesson" to generate lessons from custom text via Google Gemini AI.
+          </div>
+        )}
 
         <div className={styles.statsGrid}>
           <div className={styles.statItem}>

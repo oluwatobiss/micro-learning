@@ -1,6 +1,7 @@
 import type { ActionFunctionArgs } from "react-router";
 import { generateLessonWithGeminiServer } from "../services/gemini.server.ts";
 import { validateSourceInput } from "../utils/text.ts";
+import { isBuiltInSampleArticle } from "../services/sampleArticle.ts";
 import type { SourceInputData } from "../types/generator.ts";
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -91,6 +92,7 @@ export async function action({ request }: ActionFunctionArgs) {
         error: message,
         code,
         correlationId,
+        isSampleArticle: isBuiltInSampleArticle(body),
         ...(upstreamStatus ? { upstreamStatus } : {}),
       },
       { status },

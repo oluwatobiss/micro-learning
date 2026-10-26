@@ -22,8 +22,17 @@ import {
   GeminiError,
   getGeminiModel,
   DEFAULT_GEMINI_MODEL,
+  DEFAULT_GEMINI_FALLBACK_MODEL,
+  getGeminiFallbackModel,
   listAvailableGeminiModels,
+  isTransientError,
+  parseRetryAfterMs,
+  buildGeminiPrompt,
 } from "../app/services/gemini.server.ts";
+import {
+  isBuiltInSampleArticle,
+  getPrecomputedSampleLessonResult,
+} from "../app/services/sampleArticle.ts";
 import { validateMediaSpec } from "../app/types/media.ts";
 import { action as generateAction } from "../app/routes/api.generate.ts";
 
@@ -1433,5 +1442,205 @@ test("26. Live Route Registration and Service Import Integrity", async () => {
   assert.ok(
     apiRouteContent.includes("await generateLessonWithGeminiServer(body, correlationId)"),
     "api.generate.ts must invoke generateLessonWithGeminiServer on live POST requests"
+  );
+});
+
+
+test("27. Streamlined Prompt Size Optimization (Measured Word Count Reduction)", async () => {
+  const analysis = understandSource(SAMPLE_SOURCE_INPUT);
+  const plan = planLesson(analysis, SAMPLE_SOURCE_INPUT);
+  const prompt = buildGeminiPrompt(SAMPLE_SOURCE_INPUT, analysis, plan);
+
+  const wordCount = prompt.trim().split(/\s+/).length;
+  // Previously the prompt was 3,319 words. The streamlined prompt must be under 1,500 words.
+  assert.ok(
+    wordCount < 1500,
+    `Optimized prompt should be < 1,500 words (measured: ${wordCount} words)`
+  );
+  assert.ok(
+    wordCount >= 1000,
+    `Optimized prompt must retain full article and instructions (measured: ${wordCount} words)`
+  );
+
+  // Verify critical directives remain intact
+  assert.ok(prompt.includes("AUTHORITATIVE SOURCE & GROUND TRUTH"), "Must preserve ground truth directive");
+  assert.ok(prompt.includes("ZERO TOPIC SUBSTITUTION"), "Must preserve zero topic substitution directive");
+  assert.ok(prompt.includes("UNTRUSTED USER CONTENT GUARD"), "Must preserve untrusted user content guard");
+  assert.ok(prompt.includes("COMPREHENSION CHECKPOINT INTEGRITY"), "Must preserve checkpoint integrity");
+  assert.ok(prompt.includes(SAMPLE_SOURCE_INPUT.sourceText), "Must include the entire unmodified source article");
+});
+
+test("28. Transient 503 Bounded Retry & Backoff Recovery", async () => {
+  let callCount = 0;
+
+  setGeminiClientOverride({
+    async generateContent() {
+      callCount++;
+      if (callCount === 1) {
+        // First attempt fails with transient 503 high demand
+        const err = new Error("This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.");
+        err.status = 503;
+        throw err;
+      }
+      // Second attempt succeeds
+      return { text: JSON.stringify(SAMPLE_MOCK_GEMINI_OUTPUT) };
+    },
+  });
+
+  const req = new Request("http://localhost:5173/api/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...SAMPLE_SOURCE_INPUT, permissionConfirmed: true }),
+  });
+
+  const res = await generateAction({ request: req, params: {}, context: {} });
+  assert.equal(res.status, 200, "Should succeed on second attempt after retry");
+  assert.equal(callCount, 2, "Expected exactly 2 attempts before success");
+
+  const data = await res.json();
+  assert.equal(data.success, true);
+  assert.ok(data.result.lesson.cards.length >= 4, "Must generate valid cards on retry");
+});
+
+test("29. Transient 503 Fallback Model Activation (gemini-3.6-flash)", async () => {
+  const modelsAttempted = [];
+
+  setGeminiClientOverride({
+    async generateContent(args) {
+      modelsAttempted.push(args.model);
+      if (args.model === "gemini-3.8-flash") {
+        // Primary model fails with 503 across all attempts
+        const err = new Error("This model is currently experiencing high demand. Please try again later.");
+        err.status = 503;
+        throw err;
+      }
+      // Fallback model succeeds
+      return { text: JSON.stringify(SAMPLE_MOCK_GEMINI_OUTPUT) };
+    },
+  });
+
+  const req = new Request("http://localhost:5173/api/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...SAMPLE_SOURCE_INPUT, permissionConfirmed: true }),
+  });
+
+  const res = await generateAction({ request: req, params: {}, context: {} });
+  assert.equal(res.status, 200, "Should succeed using fallback model");
+  assert.ok(modelsAttempted.includes("gemini-3.8-flash"), "Must attempt primary model first");
+  assert.ok(modelsAttempted.includes("gemini-3.6-flash"), "Must fallback to gemini-3.6-flash");
+
+  const data = await res.json();
+  assert.equal(data.success, true);
+  assert.ok(data.result.lesson.cards.length >= 4);
+});
+
+test("30. Permanent Errors Abort Immediately (Zero Retries & No Fallback)", async () => {
+  let attempts = 0;
+
+  setGeminiClientOverride({
+    async generateContent() {
+      attempts++;
+      const err = new Error("API key not valid. Please pass a valid API key.");
+      err.status = 401;
+      throw err;
+    },
+  });
+
+  const req = new Request("http://localhost:5173/api/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...SAMPLE_SOURCE_INPUT, permissionConfirmed: true }),
+  });
+
+  const res = await generateAction({ request: req, params: {}, context: {} });
+  assert.equal(res.status, 401);
+  assert.equal(attempts, 1, "Permanent 401 auth error must abort immediately without retries");
+});
+
+test("31. Retry-After Header Parsing and Bounding", async () => {
+  // Numeric seconds in headers
+  const errWithSeconds = { headers: new Map([["retry-after", "2"]]) };
+  assert.equal(parseRetryAfterMs(errWithSeconds), 2000);
+
+  // Large numeric seconds should be capped at 6000ms
+  const errWithBigSeconds = { headers: new Map([["retry-after", "120"]]) };
+  assert.equal(parseRetryAfterMs(errWithBigSeconds), 6000, "Should cap retry-after at 6000ms");
+
+  // Non-transient errors should not be considered transient
+  assert.equal(isTransientError(new GeminiError("unauthorized", "AUTH_ERROR", 401)), false);
+  assert.equal(isTransientError(new GeminiError("not found", "MODEL_ERROR", 404)), false);
+  assert.equal(isTransientError(new GeminiError("invalid schema", "INVALID_REQUEST", 400)), false);
+
+  // 503 and 429 must be transient
+  assert.equal(isTransientError(new GeminiError("high demand", "PROVIDER_ERROR", 503)), true);
+  assert.equal(isTransientError(new GeminiError("rate limit", "RATE_LIMIT", 429)), true);
+});
+
+test("32. Built-in Sample Demonstration Lesson Validation & Custom Article Isolation", async () => {
+  // Built-in sample article recognition
+  assert.equal(isBuiltInSampleArticle(SAMPLE_SOURCE_INPUT), true);
+
+  // Arbitrary custom article MUST NOT be identified as the sample article
+  const customInput = {
+    title: "Understanding CSS Subgrid Architecture",
+    author: "Jane Doe",
+    sourceUrl: "https://example.com/css-subgrid",
+    sourceText: "CSS Subgrid introduces nested grid context inheritance to modern stylesheets. By declaring grid-template-columns: subgrid, child elements align to parent tracks.",
+    permissionConfirmed: true,
+  };
+  assert.equal(isBuiltInSampleArticle(customInput), false, "Custom articles must not match sample article");
+
+  // Precomputed sample lesson validity
+  const demoResult = getPrecomputedSampleLessonResult();
+  assert.equal(demoResult.provider, "sample-demo");
+  assert.equal(demoResult.isPrecomputedDemo, true);
+  assert.ok(demoResult.qualityReport.isValid, "Demonstration lesson must pass all deterministic quality audits");
+  assert.equal(demoResult.qualityReport.groundingScore, 100);
+  assert.equal(demoResult.lesson.cards.length, 6);
+
+  // Verify checkpoint contract in demonstration lesson
+  const checkpointCard = demoResult.lesson.cards.find((c) => c.type === "checkpoint");
+  assert.ok(checkpointCard, "Demonstration lesson must contain checkpoint card");
+  assert.ok(checkpointCard.checkpoint.question.length >= 20);
+  assert.equal(checkpointCard.checkpoint.options.filter((o) => o.isCorrect).length, 1);
+});
+
+test("33. Stage 3 Error Handling Marks Progress as Failed (Not Stuck In-Progress)", async () => {
+  let progressStages = null;
+
+  setGeminiClientOverride({
+    async generateContent() {
+      const err = new Error("This model is currently experiencing high demand. Please try again later.");
+      err.status = 503;
+      throw err;
+    },
+  });
+
+  const customInput = {
+    title: "Database Indexing Deep Dive",
+    author: "Alex Morgan",
+    sourceUrl: "https://example.com/db-indexes",
+    sourceText: "B-Trees and LSM Trees represent two distinct storage paradigms in modern database engines. B-Trees optimize for random reads while LSM Trees optimize for sequential write throughput.",
+    permissionConfirmed: true,
+  };
+
+  await assert.rejects(
+    async () => {
+      await generateLesson(customInput, (state) => {
+        progressStages = state.stages;
+      });
+    },
+    (err) => {
+      assert.ok(err.message.includes("high demand") || err.message.includes("503"));
+      return true;
+    }
+  );
+
+  assert.ok(progressStages, "Progress callback should have been invoked");
+  assert.equal(
+    progressStages.cards.status,
+    "failed",
+    "Stage 3 (cards) must be transitioned to failed status and NOT left in-progress"
   );
 });
